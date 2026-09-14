@@ -1,5 +1,4 @@
 import { ContainerScroll } from "@/components/ui/container-scroll-animation"
-import GradientWaves from "@/components/GradientWaves"
 
 export function HeroSection() {
   return (

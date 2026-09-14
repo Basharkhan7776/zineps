@@ -13,10 +13,14 @@ import { FaqSection } from "@/components/landing/FaqSection"
 import { CtaSection } from "@/components/landing/CtaSection"
 import { Footer } from "@/components/landing/Footer"
 import GradientWaves from "./components/GradientWaves"
+import { WaveLoaderReveal } from "@/components/ui/wave-loader-reveal"
 
 export function App() {
   return (
     <div className="min-h-screen bg-white text-[#424242] flex flex-col selection:bg-[#70CAB9]/30">
+      {/* Background Load Wave Reveal Animation */}
+      <WaveLoaderReveal />
+
       {/* Top Announcement Bar */}
       <AnnouncementBanner />
 
@@ -31,7 +35,7 @@ export function App() {
           <div className="w-full h-[100vh] rotate-180">
             <GradientWaves
               horizonColor="#0f7f75"
-              waveColor="#70CAB9"
+              waveColor="#02695e"
               crestColor="#ffffff"
               speed={0.4}
               amplitude={3}

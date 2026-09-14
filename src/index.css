@@ -127,6 +127,9 @@
   html {
     @apply font-sans scroll-smooth;
   }
+  html.lenis {
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Custom styles for Zineps landing page */
