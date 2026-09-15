@@ -75,13 +75,13 @@ export const ContainerScroll = ({
 
   return (
     <div
-      className="h-[55rem] sm:h-[65rem] md:h-[78rem] flex items-center justify-center relative p-2 md:p-6"
+      className="h-[48rem] sm:h-[58rem] md:h-[68rem] flex items-center justify-center relative p-2 md:p-6"
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className="py-6 md:py-16 w-full relative"
+        className="pt-1 md:pt-3 pb-2 md:pb-8 w-full relative"
         style={{
           perspective: "950px",
         }}
@@ -149,7 +149,7 @@ export const TabletCard = ({
   const combinedRotateY = mouseTiltY
 
   return (
-    <div className="relative max-w-6xl mt-6 md:mt-10 mx-auto w-full px-2 sm:px-4">
+    <div className="relative max-w-6xl mt-2 md:mt-4 mx-auto w-full px-2 sm:px-4">
       {/* Ambient Top Backlight Glow for 3D spatial depth */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-24 bg-gradient-to-b from-[#70CAB9]/25 to-transparent blur-3xl pointer-events-none rounded-full" />
 
@@ -165,9 +165,9 @@ export const TabletCard = ({
           willChange: "transform",
           backfaceVisibility: "hidden",
           boxShadow:
-            "0 0 #0000004d, 0 12px 24px #0000004a, 0 42px 42px #00000042, 0 95px 60px #00000026, 0 165px 70px #0000000a, 0 245px 75px #00000003",
+            "0 8px 24px -4px rgba(0, 0, 0, 0.12), 0 16px 32px -8px rgba(0, 0, 0, 0.08)",
         }}
-        className="transform-gpu max-w-6xl mx-auto w-full border-[2.5px] border-[#3b4758] border-t-[3.5px] border-t-white/30 p-2 sm:p-3 md:p-4 bg-gradient-to-b from-[#242c38] via-[#1a2028] to-[#12161c] rounded-[24px] sm:rounded-[34px] md:rounded-[44px] shadow-2xl relative"
+        className="transform-gpu max-w-6xl mx-auto w-full border-[2.5px] border-[#3b4758] border-t-[3.5px] border-t-white/30 p-2 sm:p-3 md:p-4 bg-gradient-to-b from-[#242c38] via-[#1a2028] to-[#12161c] rounded-[24px] sm:rounded-[34px] md:rounded-[44px] relative"
       >
         {/* Extruded top rim highlight bevel */}
         <div className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none z-30" />
@@ -193,8 +193,8 @@ export const TabletCard = ({
         </div>
       </motion.div>
 
-      {/* Ambient Depth Contact Shadow */}
-      <div className="w-[90%] mx-auto h-7 bg-black/40 blur-xl rounded-full -mt-2 pointer-events-none" />
+      {/* Ambient Depth Contact Shadow - Soft, subtle and light */}
+      <div className="w-[70%] mx-auto h-3.5 bg-black/10 blur-lg rounded-full -mt-1 pointer-events-none" />
     </div>
   )
 }

@@ -1,14 +1,15 @@
 import { ContainerScroll } from "@/components/ui/container-scroll-animation"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function HeroSection() {
   return (
-    <section className="relative w-full overflow-hidden pb-8 md:pb-16">
+    <section className="relative w-full overflow-hidden pb-2 md:pb-6">
 
       <div className="relative z-10 max-w-[1440px] mx-auto px-4">
         {/* Aceternity 3D Perspective Tablet Scroll Hero with enhanced X/Z movement and top depth */}
         <ContainerScroll
           titleComponent={
-            <div className="relative mx-auto w-full max-w-5xl text-center flex flex-col items-center pt-2 md:pt-6">
+            <div className="relative mx-auto w-full max-w-5xl text-center flex flex-col items-center pt-0 md:pt-2">
               <span className="block text-base sm:text-xl md:text-2xl text-neutral-700 font-medium tracking-tight">
                 For companies that ship, and the logistics partners that transport their goods
               </span>
@@ -25,20 +26,22 @@ export function HeroSection() {
               </p>
 
               <div className="mt-7 flex flex-wrap items-center justify-center gap-4">
-                <a
+                <HoverButton
                   href="https://app.zineps.com/Account/Register"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold text-sm sm:text-base text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] shadow-md transition-all hover:scale-105 border border-[#70CAB9]/40"
+                  size="md"
+                  className="shadow-md"
                 >
                   Start shipping
-                </a>
-                <a
+                </HoverButton>
+                <HoverButton
                   href="#logistics-os"
-                  className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold text-sm sm:text-base text-gray-800 bg-white/80 hover:bg-white border border-gray-300 shadow-sm transition-all hover:scale-105"
+                  variant="outline"
+                  size="md"
                 >
                   I am a logistics partner
-                </a>
+                </HoverButton>
               </div>
             </div>
           }

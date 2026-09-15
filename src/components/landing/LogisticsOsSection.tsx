@@ -1,4 +1,5 @@
 import { CheckCircle2 } from "lucide-react"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function LogisticsOsSection() {
   return (
@@ -40,14 +41,15 @@ export function LogisticsOsSection() {
             </ul>
 
             <div>
-              <a
+              <HoverButton
                 href="https://app.zineps.com/Account/Register"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center font-semibold text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] h-12 px-7 rounded-xl shadow-md transition-all hover:scale-105 border border-[#70CAB9]/30"
+                size="lg"
+                className="shadow-md"
               >
                 Become a partner
-              </a>
+              </HoverButton>
             </div>
           </div>
 

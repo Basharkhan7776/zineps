@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function IntegrationsSection() {
   const logos = [
@@ -52,15 +53,16 @@ export function IntegrationsSection() {
             </p>
 
             <div>
-              <a
+              <HoverButton
                 href="https://app.zineps.com/Account/Register"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 font-semibold text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] h-12 px-7 rounded-xl shadow-md transition-all hover:scale-105 border border-[#70CAB9]/30"
+                size="lg"
+                className="shadow-md"
               >
                 <span>View integrations</span>
                 <ArrowRight className="w-4 h-4" />
-              </a>
+              </HoverButton>
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import { Sparkles, ArrowRight } from "lucide-react"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function ShippingAiBanner() {
   return (
@@ -34,15 +35,17 @@ export function ShippingAiBanner() {
             </div>
 
             <div className="flex-shrink-0">
-              <a
+              <HoverButton
                 href="https://app.zineps.com/Account/Register"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 font-semibold text-[#2b453e] bg-white hover:bg-emerald-50 h-12 px-7 rounded-xl shadow-lg transition-all hover:scale-105 group"
+                variant="white"
+                size="lg"
+                className="shadow-lg group"
               >
                 <span>Discover Shipping AI</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </a>
+              </HoverButton>
             </div>
           </div>
         </div>

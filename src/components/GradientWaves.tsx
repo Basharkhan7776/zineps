@@ -5,7 +5,10 @@ export type GradientWavesDetail = 'low' | 'medium' | 'high';
 
 export interface GradientWavesProps {
   horizonColor?: string;
+  deepColor?: string;
   waveColor?: string;
+  mintColor?: string;
+  mistColor?: string;
   crestColor?: string;
   speed?: number;
   amplitude?: number;
@@ -69,7 +72,10 @@ uniform vec2 uMouse;
 uniform float uParallax;
 uniform bool uEnableMouse;
 uniform vec3 uHorizonColor;
+uniform vec3 uDeepColor;
 uniform vec3 uWaveColor;
+uniform vec3 uMintColor;
+uniform vec3 uMistColor;
 uniform vec3 uCrestColor;
 out vec4 fragColor;
 
@@ -81,12 +87,20 @@ float hash21(vec2 p) {
   return fract((p3.x + p3.y) * p3.z);
 }
 
+// Multi-octave harmonic billow displacement for soft cumulus clouds
 float plasma(vec3 r, vec2 freq, vec4 tc) {
   float mx = r.x + tc.x;
-  mx += uSwell * sin((r.y + mx) / 20.0 + tc.y);
+  mx += uSwell * sin((r.y + mx) / 22.0 + tc.y);
   float my = r.y - tc.z;
-  my += uTurbulence * cos(r.x / 23.0 + tc.w);
-  return r.z - (sin(mx * freq.x) * uAmplitude + sin(my * freq.y) * uAmplitude + uHeight);
+  my += uTurbulence * cos(r.x / 24.0 + tc.w);
+  
+  // Layered harmonics for natural billowing cumulus cloud puffs
+  float billow1 = 0.35 * sin((mx + my) * freq.x * 2.1);
+  float billow2 = 0.22 * cos((mx - my) * freq.y * 1.7);
+  float billow3 = 0.14 * sin((mx * 1.5 - my * 0.8) * freq.x * 3.2 + tc.y * 1.2);
+  float cloudShape = sin(mx * freq.x) + sin(my * freq.y) + billow1 + billow2 + billow3;
+
+  return r.z - (cloudShape * uAmplitude + uHeight);
 }
 
 float raymarch(vec3 pos, vec3 dir, vec2 freq, vec4 tc) {
@@ -99,6 +113,15 @@ float raymarch(vec3 pos, vec3 dir, vec2 freq, vec4 tc) {
     if (!(abs(dist) < MAX_DIST)) return MAX_DIST;
   }
   return dist;
+}
+
+// 5-stop primary brand volumetric color ramp for ethereal clouds
+vec3 getCloudColor(float h) {
+  vec3 c = mix(uDeepColor, uWaveColor, smoothstep(0.0, 0.28, h));
+  c = mix(c, uMintColor, smoothstep(0.24, 0.56, h));
+  c = mix(c, uMistColor, smoothstep(0.52, 0.82, h));
+  c = mix(c, uCrestColor, smoothstep(0.78, 1.0, h));
+  return c;
 }
 
 void main() {
@@ -136,12 +159,16 @@ void main() {
   vec3 pos = cam + dist * dir;
 
   float t = clamp(uFogDepth / max(dist, 0.001), 0.0, 1.0);
-  vec3 body = mix(uWaveColor, uCrestColor, clamp(pos.z * 0.08 + 0.5, 0.0, 1.0));
-  vec3 col = mix(uHorizonColor, body, t);
+  // Volumetric cloud density with smooth atmospheric scattering
+  float cloudDensity = smoothstep(0.01, 0.96, t);
+  float cloudHeight = clamp(pos.z * 0.08 + 0.5, 0.0, 1.0);
+  vec3 body = getCloudColor(cloudHeight);
+  vec3 col = mix(uHorizonColor, body, cloudDensity);
   col *= uBrightness;
   col = clamp(col, 0.0, 1.0);
 
-  float alpha = clamp(t, 0.0, 1.0) * uOpacity;
+  // Soft atmospheric cloud alpha
+  float alpha = pow(cloudDensity, 1.35) * uOpacity;
   if (uGrain > 0.5) {
     float g = hash21(gl_FragCoord.xy + mod(iTime, 64.0) * 11.0);
     alpha += (g - 0.5) * uGrainIntensity;
@@ -159,26 +186,29 @@ type GradientWavesCtx = {
 const ctxMap = new WeakMap<HTMLDivElement, GradientWavesCtx>();
 
 const GradientWaves: React.FC<GradientWavesProps> = ({
-  horizonColor = '#5227FF',
-  waveColor = '#FF9FFC',
+  horizonColor = '#0f7f75',
+  deepColor = '#084b44',
+  waveColor = '#1b8a7d',
+  mintColor = '#70CAB9',
+  mistColor = '#bcf0e8',
   crestColor = '#FFFFFF',
-  speed = 0.4,
-  amplitude = 2.5,
-  waveScale = 0.6,
-  waveRatio = 0.9,
-  swell = 35,
-  turbulence = 20,
-  tilt = 1.11,
+  speed = 0.16,
+  amplitude = 2.1,
+  waveScale = 0.65,
+  waveRatio = 0.8,
+  swell = 42,
+  turbulence = 22,
+  tilt = 1.05,
   zoom = 1.0,
-  height = 5.5,
-  fogDepth = 15,
-  detail = 'medium',
-  brightness = 1.0,
-  opacity = 1.0,
-  mouseInteraction = true,
+  height = 2.0,
+  fogDepth = 38,
+  detail = 'high',
+  brightness = 0.88,
+  opacity = 0.96,
+  mouseInteraction = false,
   parallaxStrength = 0.5,
-  grain = true,
-  grainIntensity = 0.05,
+  grain = false,
+  grainIntensity = 0.0,
   className = ''
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -211,27 +241,30 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
       uniforms: {
         iTime: { value: 0 },
         iResolution: { value: new Float32Array([1, 1]) },
-        uSpeed: { value: 0.4 },
-        uAmplitude: { value: 2.5 },
-        uWaveScale: { value: 0.6 },
-        uWaveRatio: { value: 0.9 },
-        uSwell: { value: 35 },
-        uTurbulence: { value: 20 },
-        uTilt: { value: 1.11 },
-        uZoom: { value: 1.0 },
-        uHeight: { value: 5.5 },
-        uFogDepth: { value: 15 },
-        uSteps: { value: 70.0 },
-        uBrightness: { value: 1.0 },
-        uOpacity: { value: 1.0 },
-        uGrain: { value: 1.0 },
-        uGrainIntensity: { value: 0.05 },
+        uSpeed: { value: speed },
+        uAmplitude: { value: amplitude },
+        uWaveScale: { value: waveScale },
+        uWaveRatio: { value: waveRatio },
+        uSwell: { value: swell },
+        uTurbulence: { value: turbulence },
+        uTilt: { value: tilt },
+        uZoom: { value: zoom },
+        uHeight: { value: height },
+        uFogDepth: { value: fogDepth },
+        uSteps: { value: detailToSteps(detail) },
+        uBrightness: { value: brightness },
+        uOpacity: { value: opacity },
+        uGrain: { value: grain ? 1.0 : 0.0 },
+        uGrainIntensity: { value: grainIntensity },
         uMouse: { value: new Float32Array([0.5, 0.5]) },
-        uParallax: { value: 0.5 },
-        uEnableMouse: { value: true },
-        uHorizonColor: { value: new Float32Array([1, 1, 1]) },
-        uWaveColor: { value: new Float32Array([1, 1, 1]) },
-        uCrestColor: { value: new Float32Array([1, 1, 1]) }
+        uParallax: { value: parallaxStrength },
+        uEnableMouse: { value: mouseInteraction },
+        uHorizonColor: { value: new Float32Array(hexToRgb(horizonColor)) },
+        uDeepColor: { value: new Float32Array(hexToRgb(deepColor)) },
+        uWaveColor: { value: new Float32Array(hexToRgb(waveColor)) },
+        uMintColor: { value: new Float32Array(hexToRgb(mintColor)) },
+        uMistColor: { value: new Float32Array(hexToRgb(mistColor)) },
+        uCrestColor: { value: new Float32Array(hexToRgb(crestColor)) }
       }
     });
 
@@ -256,17 +289,22 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
     const currentMouse: [number, number] = [0.5, 0.5];
     const targetMouse: [number, number] = [0.5, 0.5];
 
-    const onPointerMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      targetMouse[0] = (e.clientX - rect.left) / rect.width;
-      targetMouse[1] = 1.0 - (e.clientY - rect.top) / rect.height;
-    };
-    const onPointerLeave = () => {
-      targetMouse[0] = 0.5;
-      targetMouse[1] = 0.5;
-    };
-    canvas.addEventListener('pointermove', onPointerMove);
-    canvas.addEventListener('pointerleave', onPointerLeave);
+    let onPointerMove: ((e: PointerEvent) => void) | null = null;
+    let onPointerLeave: (() => void) | null = null;
+
+    if (mouseInteraction) {
+      onPointerMove = (e: PointerEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        targetMouse[0] = (e.clientX - rect.left) / rect.width;
+        targetMouse[1] = 1.0 - (e.clientY - rect.top) / rect.height;
+      };
+      onPointerLeave = () => {
+        targetMouse[0] = 0.5;
+        targetMouse[1] = 0.5;
+      };
+      canvas.addEventListener('pointermove', onPointerMove);
+      canvas.addEventListener('pointerleave', onPointerLeave);
+    }
 
     let raf = 0;
     let isVisible = true;
@@ -275,10 +313,13 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
 
     const loop = (t: number) => {
       (program.uniforms.iTime as { value: number }).value = (t - t0) * 0.001;
-      const tx = enableMouseRef.current ? targetMouse[0] : 0.5;
-      const ty = enableMouseRef.current ? targetMouse[1] : 0.5;
-      currentMouse[0] += 0.05 * (tx - currentMouse[0]);
-      currentMouse[1] += 0.05 * (ty - currentMouse[1]);
+      if (enableMouseRef.current) {
+        currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
+        currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
+      } else {
+        currentMouse[0] = 0.5;
+        currentMouse[1] = 0.5;
+      }
       const m = (program.uniforms.uMouse as { value: Float32Array }).value;
       m[0] = currentMouse[0];
       m[1] = currentMouse[1];
@@ -326,8 +367,8 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
       ro.disconnect();
       io.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
-      canvas.removeEventListener('pointermove', onPointerMove);
-      canvas.removeEventListener('pointerleave', onPointerLeave);
+      if (onPointerMove) canvas.removeEventListener('pointermove', onPointerMove);
+      if (onPointerLeave) canvas.removeEventListener('pointerleave', onPointerLeave);
       ctxMap.delete(container);
       try {
         container.removeChild(canvas);
@@ -336,6 +377,7 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
       }
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -365,24 +407,27 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
     u.uGrainIntensity.value = grainIntensity;
     u.uParallax.value = parallaxStrength;
     u.uEnableMouse.value = mouseInteraction;
-    const hc = u.uHorizonColor.value as Float32Array;
-    const wc = u.uWaveColor.value as Float32Array;
-    const cc = u.uCrestColor.value as Float32Array;
-    const h = hexToRgb(horizonColor);
-    const w = hexToRgb(waveColor);
-    const cr = hexToRgb(crestColor);
-    hc[0] = h[0];
-    hc[1] = h[1];
-    hc[2] = h[2];
-    wc[0] = w[0];
-    wc[1] = w[1];
-    wc[2] = w[2];
-    cc[0] = cr[0];
-    cc[1] = cr[1];
-    cc[2] = cr[2];
+
+    const setRgb = (uniformKey: string, hex: string) => {
+      const arr = u[uniformKey].value as Float32Array;
+      const rgb = hexToRgb(hex);
+      arr[0] = rgb[0];
+      arr[1] = rgb[1];
+      arr[2] = rgb[2];
+    };
+
+    setRgb('uHorizonColor', horizonColor);
+    setRgb('uDeepColor', deepColor);
+    setRgb('uWaveColor', waveColor);
+    setRgb('uMintColor', mintColor);
+    setRgb('uMistColor', mistColor);
+    setRgb('uCrestColor', crestColor);
   }, [
     horizonColor,
+    deepColor,
     waveColor,
+    mintColor,
+    mistColor,
     crestColor,
     speed,
     amplitude,

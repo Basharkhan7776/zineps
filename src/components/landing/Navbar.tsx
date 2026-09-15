@@ -2,6 +2,7 @@ import { useState, useRef } from "react"
 import { motion, useScroll, useMotionValueEvent, AnimatePresence, LayoutGroup, type Variants } from "framer-motion"
 import { ChevronDown, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -272,15 +273,15 @@ export function Navbar() {
               </AnimatePresence>
             </div>
 
-            {/* Sign Up Button - Shortened Sleek Height */}
-            <a
+            {/* Sign Up Button - Shortened Sleek Height with HoverButton */}
+            <HoverButton
               href="https://app.zineps.com/Account/Register"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center font-semibold text-xs sm:text-sm text-neutral-900 h-8 sm:h-8.5 px-3.5 sm:px-4 rounded-lg bg-gradient-to-br from-[#70CAB9] to-white hover:brightness-95 transition-all shadow-xs border border-[#70CAB9]/40 hover:scale-[1.02]"
+              size="sm"
             >
               Sign up
-            </a>
+            </HoverButton>
           </div>
 
           {/* Mobile Hamburger */}
@@ -350,14 +351,15 @@ export function Navbar() {
                 FAQ
               </a>
               <div className="pt-2 border-t border-gray-200/80 flex flex-col gap-2">
-                <a
+                <HoverButton
                   href="https://app.zineps.com/Account/Register"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-center font-semibold text-xs sm:text-sm text-neutral-900 py-2.5 rounded-lg bg-gradient-to-br from-[#70CAB9] to-white shadow-xs border border-[#70CAB9]/40"
+                  size="sm"
+                  className="w-full py-2.5"
                 >
                   Sign up
-                </a>
+                </HoverButton>
               </div>
             </motion.div>
           )}

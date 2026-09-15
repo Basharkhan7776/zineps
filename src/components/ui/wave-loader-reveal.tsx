@@ -7,13 +7,24 @@ interface WaveLoaderRevealProps {
 export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [isFinished, setIsFinished] = useState(false)
+  const [isOpening, setIsOpening] = useState(false)
 
   const handleSkip = () => {
     setIsFinished(true)
+    // Clean up pre-curtain if still present
+    const preCurtain = document.getElementById("pre-react-curtain")
+    if (preCurtain) preCurtain.remove()
+    document.body.style.backgroundColor = ""
     if (onComplete) onComplete()
   }
 
   useEffect(() => {
+    // Remove the static HTML pre-curtain once React has mounted and taken control
+    const preCurtain = document.getElementById("pre-react-curtain")
+    if (preCurtain) {
+      preCurtain.remove()
+    }
+
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext("2d")
@@ -21,22 +32,25 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
 
     let animId: number
     const startTime = performance.now()
-    const holdDuration = 220 // initial solid dark black hold in ms
-    const waveDuration = 1400 // ms for wave to travel from bottom to top
-    const totalDuration = holdDuration + waveDuration
+    const holdDuration = 400 // "wait and load all things" solid pure black hold in ms
+    const revealDuration = 1650 // buttery-smooth opening expansion
+    const totalDuration = holdDuration + revealDuration
+
+    // 80px extra padding so CSS blur(20px) never bleeds white around viewport borders
+    const PAD = 80
 
     const handleResize = () => {
       if (!canvas) return
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+      canvas.width = window.innerWidth + PAD * 2
+      canvas.height = window.innerHeight + PAD * 2
     }
 
     handleResize()
     window.addEventListener("resize", handleResize)
 
-    // Smooth cubic easing for continuous, fluid wave rise
-    const easeInOutCubic = (x: number): number => {
-      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
+    // Smooth quartic ease for ultra-fluid cinematic emergence and expansion
+    const easeInOutQuart = (x: number): number => {
+      return x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2
     }
 
     const render = (now: number) => {
@@ -44,58 +58,74 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
 
       const W = canvas.width
       const H = canvas.height
-      const time = now * 0.003
+      const time = now * 0.0025
 
       ctx.clearRect(0, 0, W, H)
 
       if (elapsed < holdDuration) {
-        // Pure solid dark black - no reveal at bottom
+        // Panel 1: Pure solid dark black
         ctx.fillStyle = "#000000"
         ctx.fillRect(0, 0, W, H)
         animId = requestAnimationFrame(render)
         return
       }
 
-      const waveElapsed = elapsed - holdDuration
-      const rawProgress = Math.min(1, waveElapsed / waveDuration)
-      const progress = easeInOutCubic(rawProgress)
+      setIsOpening(true)
 
-      // Base elevation of the wave:
-      // At progress = 0: strictly below bottom of viewport (H + 80)
-      // At progress = 1: well above top of viewport (-220)
-      const baseHeight = (H + 80) - progress * (H + 300)
+      const revealElapsed = elapsed - holdDuration
+      const rawProgress = Math.min(1, revealElapsed / revealDuration)
 
-      // Dome arch expanding from bottom center, starting at 0 and peaking mid-reveal
-      const domeRadius = (W * 0.5) * (0.35 + progress * 1.35)
-      const domeHeight = (90 + H * 0.18) * Math.sin(progress * Math.PI)
-      const rippleAmp = Math.min(1, progress * 4)
+      const W_vp = window.innerWidth
+      const H_vp = window.innerHeight
 
-      // Generate the wave contour points from left to right
+      // Height progression: rises from bottom of viewport to well beyond top
+      const progressH = easeInOutQuart(rawProgress)
+      const maxH = H_vp + PAD * 2 + 140
+      const Hpeak = progressH * maxH
+
+      // Radius progression: starts narrow and expands wide past screen borders
+      const progressR = Math.pow(rawProgress, 1.3)
+      const maxR = Math.hypot(W_vp * 0.5, H_vp) + PAD * 2 + 180
+      const minR = W_vp * 0.16
+      const R = minR + progressR * (maxR - minR)
+
+      const centerX = PAD + W_vp * 0.5
+      const bottomY = PAD + H_vp
+
+      // Gentle ripple amplitude peaks in the middle and softly settles
+      const rippleAmp = Math.sin(Math.min(Math.PI, rawProgress * Math.PI))
+
+      // Generate contour points across the width
       const points: { x: number; y: number }[] = []
-      const step = Math.max(3, Math.floor(W / 140))
+      const step = Math.max(3, Math.floor(W / 180))
 
       for (let x = 0; x <= W; x += step) {
-        const distFromCenter = Math.abs(x - W / 2)
-        const normDist = distFromCenter / Math.max(1, domeRadius)
+        const distFromCenter = Math.abs(x - centerX)
+        const u = distFromCenter / R
 
         let arch = 0
-        if (normDist < 1) {
-          // Cosine bell curve peak at center
-          arch = Math.cos(normDist * Math.PI * 0.5) * domeHeight
+        if (u < 1) {
+          // Organic curved dome profile
+          arch = Math.pow(Math.cos(u * Math.PI * 0.5), 1.35)
         }
 
-        // Fluid wave ripples that organically grow as wave sweeps up
-        const wave1 = Math.sin(x * 0.007 + time * 2.2) * 18 * rippleAmp
-        const wave2 = Math.cos(x * 0.015 - time * 1.8) * 10 * rippleAmp
-        const wave3 = Math.sin(x * 0.03 + time * 3.0) * 5 * rippleAmp
+        // Gentle, rolling organic fluid waves along the cutout edge
+        const wave1 = Math.sin(x * 0.005 + time * 1.6) * 16 * rippleAmp
+        const wave2 = Math.cos(x * 0.01 + time * 1.1) * 8 * rippleAmp
 
-        const y = baseHeight - arch + wave1 + wave2 + wave3
+        // Y position of the black curtain boundary at X
+        const y = Math.min(bottomY + PAD, bottomY - Hpeak * arch + wave1 + wave2)
         points.push({ x, y })
       }
 
-      // Draw Pure Dark Black Wave Curtain above the wave contour
-      // Absolutely no cyan borders, no stroke, no glow - just clean pure black wave
+      // Smooth outro fade at the very end of reveal
+      const alpha = rawProgress > 0.88 ? Math.max(0, 1 - (rawProgress - 0.88) / 0.12) : 1
+
+      // Draw the Black Curtain:
+      // Fills everything OUTSIDE the dome with pure black (#000000).
+      // The inside of the expanding dome is transparent, softly blurred on the edges!
       ctx.save()
+      ctx.globalAlpha = alpha
       ctx.beginPath()
       ctx.moveTo(0, 0)
       ctx.lineTo(W, 0)
@@ -108,6 +138,7 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
       ctx.lineTo(0, points[0].y)
       ctx.lineTo(0, 0)
       ctx.closePath()
+
       ctx.fillStyle = "#000000"
       ctx.fill()
       ctx.restore()
@@ -115,7 +146,8 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
       if (elapsed < totalDuration) {
         animId = requestAnimationFrame(render)
       } else {
-        // Animation finished cleanly
+        // Reveal animation finished - restore body bg and unmount
+        document.body.style.backgroundColor = ""
         setIsFinished(true)
         if (onComplete) onComplete()
       }
@@ -126,6 +158,7 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener("resize", handleResize)
+      document.body.style.backgroundColor = ""
     }
   }, [onComplete])
 
@@ -137,11 +170,22 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
       className="fixed inset-0 z-[9999] cursor-pointer select-none overflow-hidden pointer-events-auto"
       aria-label="Click to skip intro reveal"
     >
-      {/* 60fps Canvas for Pure Black Wave Reveal */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-      />
+      {/* 100% Solid Black Curtain Overlay active while pre-loading */}
+      {!isOpening && (
+        <div className="absolute inset-0 bg-black pointer-events-none z-20" />
+      )}
+
+      {/* Blurred Canvas Dome Container: -inset-20 prevents border light leaks */}
+      <div className="absolute -inset-20 overflow-hidden pointer-events-none z-10">
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full"
+          style={{
+            filter: "blur(20px)",
+            WebkitFilter: "blur(20px)",
+          }}
+        />
+      </div>
     </div>
   )
 }

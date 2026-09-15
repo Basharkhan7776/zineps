@@ -6,8 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Shipping Software for e-commerce &amp; Logistics | Zineps</title>
     <meta name="description" content="AI shipping software for eCommerce and logistics teams. Automate workflows, integrate carriers, reduce costs, and scale operations with Zineps." />
+    <style>
+      /* Prevent any white flash before React loads */
+      html, body {
+        background-color: #000000;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
   </head>
-  <body class="font-sans antialiased text-[#424242] bg-white selection:bg-[#70CAB9]/30">
+  <body class="font-sans antialiased text-[#424242] bg-black selection:bg-[#70CAB9]/30">
+    <!-- Initial pure solid black curtain preventing any flash before JS hydration -->
+    <div id="pre-react-curtain" style="position:fixed;inset:0;background:#000000;z-index:999999;pointer-events:none;"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

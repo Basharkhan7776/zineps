@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import { Mail } from "lucide-react"
 import { HoverEffect } from "@/components/ui/card-hover-effect"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function DifferentiationSection() {
   const [email, setEmail] = useState("")
@@ -74,12 +75,13 @@ export function DifferentiationSection() {
                   className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#70CAB9] focus:border-transparent text-[#424242] text-sm bg-white shadow-sm"
                 />
               </div>
-              <button
+              <HoverButton
                 type="submit"
-                className="inline-flex items-center justify-center font-semibold text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] h-12 px-6 rounded-xl shadow-sm transition-all border border-[#70CAB9]/30 whitespace-nowrap"
+                size="lg"
+                className="whitespace-nowrap px-6"
               >
                 {subscribed ? "Subscribed! ✓" : "Subscribe"}
-              </button>
+              </HoverButton>
             </form>
           </div>
 

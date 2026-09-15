@@ -22,6 +22,7 @@ export function TrustedByMarquee() {
           items={logos}
           direction="left"
           speed="normal"
+          scrollBoost={2.0}
           className="w-full"
         />
       </div>

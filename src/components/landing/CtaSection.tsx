@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function CtaSection() {
   return (
@@ -29,15 +30,16 @@ export function CtaSection() {
                 </p>
               </div>
               <div>
-                <a
+                <HoverButton
                   href="https://app.zineps.com/Account/Register"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-semibold text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] h-10 px-5 rounded-lg text-sm border border-[#70CAB9]/30 shadow-sm transition-all"
+                  size="md"
+                  className="h-10 px-5 text-sm"
                 >
-                  Start shipping
+                  <span>Start shipping</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </a>
+                </HoverButton>
               </div>
             </div>
 
@@ -51,13 +53,15 @@ export function CtaSection() {
                 </p>
               </div>
               <div>
-                <a
+                <HoverButton
                   href="#logistics-os"
-                  className="inline-flex items-center gap-2 font-semibold text-gray-800 bg-gray-100 hover:bg-gray-200 h-10 px-5 rounded-lg text-sm transition-all"
+                  variant="secondary"
+                  size="md"
+                  className="h-10 px-5 text-sm"
                 >
-                  I am a logistics partner
+                  <span>I am a logistics partner</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </a>
+                </HoverButton>
               </div>
             </div>
           </div>
@@ -76,20 +80,22 @@ export function CtaSection() {
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
-              <a
+              <HoverButton
                 href="https://app.zineps.com/Account/Register"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center font-semibold text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] h-12 px-7 rounded-xl shadow-md transition-all hover:scale-105 border border-[#70CAB9]/30"
+                size="lg"
+                className="shadow-md"
               >
                 Start your free trial
-              </a>
-              <a
+              </HoverButton>
+              <HoverButton
                 href="mailto:info@zineps.com"
-                className="inline-flex items-center justify-center font-medium text-gray-800 bg-white hover:bg-gray-50 border border-gray-300 h-12 px-7 rounded-xl shadow-sm transition-all hover:scale-105"
+                variant="outline"
+                size="lg"
               >
                 Contact us
-              </a>
+              </HoverButton>
             </div>
           </div>
 

@@ -13,13 +13,46 @@ import { FaqSection } from "@/components/landing/FaqSection"
 import { CtaSection } from "@/components/landing/CtaSection"
 import { Footer } from "@/components/landing/Footer"
 import GradientWaves from "./components/GradientWaves"
+import { CloudParallax } from "@/components/ui/cloud-parallax"
 import { WaveLoaderReveal } from "@/components/ui/wave-loader-reveal"
 
 export function App() {
   return (
-    <div className="min-h-screen bg-white text-[#424242] flex flex-col selection:bg-[#70CAB9]/30">
+    <div className="relative min-h-screen bg-white text-[#424242] flex flex-col selection:bg-[#70CAB9]/30">
       {/* Background Load Wave Reveal Animation */}
       <WaveLoaderReveal />
+
+      {/* WebGL 3D Cloud Gradient Background starting from the very top (no pad) */}
+      <CloudParallax className="absolute top-0 left-0 right-0 w-full h-[125vh] pointer-events-none overflow-hidden z-0">
+        <div className="w-full h-[125vh] rotate-180">
+          <GradientWaves
+            horizonColor="#0a524a"
+            deepColor="#083d37"
+            waveColor="#177569"
+            mintColor="#70CAB9"
+            mistColor="#bbf0e7"
+            crestColor="#ffffff"
+            speed={0.14}
+            amplitude={2.0}
+            waveScale={0.62}
+            waveRatio={0.82}
+            swell={44}
+            turbulence={24}
+            tilt={1.05}
+            zoom={1}
+            height={2}
+            fogDepth={40}
+            detail="high"
+            brightness={0.88}
+            opacity={0.96}
+            mouseInteraction={false}
+            parallaxStrength={0}
+            grain={false}
+            grainIntensity={0}
+            className="w-full h-full"
+          />
+        </div>
+      </CloudParallax>
 
       {/* Top Announcement Bar */}
       <AnnouncementBanner />
@@ -28,37 +61,7 @@ export function App() {
       <Navbar />
 
       {/* Main Content Sections */}
-      <main className="flex-1">
-        {/* Hero Section with Aceternity ContainerScroll */}
-        {/* WebGL 3D Gradient Waves Hero Background (Rotated 180deg - upside down fog) */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
-          <div className="w-full h-[100vh] rotate-180">
-            <GradientWaves
-              horizonColor="#0f7f75"
-              waveColor="#02695e"
-              crestColor="#ffffff"
-              speed={0.4}
-              amplitude={3}
-              waveScale={0.9}
-              waveRatio={0.7}
-              swell={35}
-              turbulence={30.5}
-              tilt={1.03}
-              zoom={1}
-              height={2}
-              fogDepth={25}
-              detail="high"
-              brightness={0.8}
-              opacity={1}
-              mouseInteraction={false}
-              parallaxStrength={0.54}
-              grain={false}
-              grainIntensity={0}
-              className="w-full h-full"
-            />
-          </div>
-        </div>
-
+      <main className="flex-1 relative z-10">
         <HeroSection />
 
         {/* Social Proof Client Logo Marquee */}

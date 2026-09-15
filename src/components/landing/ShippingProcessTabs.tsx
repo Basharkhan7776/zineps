@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { CheckCircle2, ShoppingBag, Store, Truck, Building2, Factory, Warehouse } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { HoverButton } from "@/components/ui/hover-button"
 
 export function ShippingProcessTabs() {
   const [activeTab, setActiveTab] = useState<"ecommerce" | "b2b">("ecommerce")
@@ -75,14 +76,14 @@ export function ShippingProcessTabs() {
                     </ul>
 
                     <div>
-                      <a
+                      <HoverButton
                         href="https://app.zineps.com/Account/Register"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center font-semibold text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] h-11 px-6 rounded-lg shadow-sm transition-all border border-[#70CAB9]/30"
+                        size="md"
                       >
                         Read more
-                      </a>
+                      </HoverButton>
                     </div>
                   </div>
 
@@ -154,12 +155,12 @@ export function ShippingProcessTabs() {
                     </ul>
 
                     <div>
-                      <a
+                      <HoverButton
                         href="#logistics-os"
-                        className="inline-flex items-center justify-center font-semibold text-gray-900 bg-gradient-to-br from-[#70CAB9] to-white hover:bg-[#d7f0ea] h-11 px-6 rounded-lg shadow-sm transition-all border border-[#70CAB9]/30"
+                        size="md"
                       >
                         Read more
-                      </a>
+                      </HoverButton>
                     </div>
                   </div>
 

@@ -1,3 +1,4 @@
+import { HoverButton } from "@/components/ui/hover-button"
 export function PartnerRatesSection() {
   return (
     <section id="partner-rates" className="relative py-14 md:py-20">
@@ -15,11 +16,6 @@ export function PartnerRatesSection() {
           <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center relative z-10">
             {/* Left Content */}
             <div className="flex flex-col">
-              <div className="inline-block mb-6">
-                <span className="px-4 py-2 rounded-full bg-white/20 text-white text-xs font-semibold uppercase tracking-wider backdrop-blur-sm shadow-sm">
-                  PARTNER SHIPPING RATES
-                </span>
-              </div>
 
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
                 Their buying power becomes yours
@@ -59,20 +55,24 @@ export function PartnerRatesSection() {
 
               {/* Action Buttons */}
               <div className="mt-10 flex flex-col sm:flex-row flex-wrap gap-4">
-                <a
+                <HoverButton
                   href="https://app.zineps.com/Account/Register/new/7/SD"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center font-semibold text-[#3d5f56] bg-white hover:bg-white/90 h-12 px-7 rounded-xl shadow-md transition-all hover:scale-105"
+                  variant="white"
+                  size="lg"
+                  className="shadow-md font-semibold text-[#3d5f56]"
                 >
                   Start for free
-                </a>
-                <a
+                </HoverButton>
+                <HoverButton
                   href="#faq"
-                  className="inline-flex items-center justify-center font-medium text-white border border-white/60 hover:bg-white/15 h-12 px-7 rounded-xl transition-all hover:scale-105"
+                  variant="outline"
+                  size="lg"
+                  className="border-white/60 text-white bg-transparent hover:bg-white/15"
                 >
                   How partner rates work
-                </a>
+                </HoverButton>
               </div>
             </div>
 
