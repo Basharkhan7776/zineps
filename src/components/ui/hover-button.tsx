@@ -50,11 +50,11 @@ export const HoverButton: React.FC<HoverButtonProps> = (props) => {
     setIsHovered(false)
   }
 
-  // Size presets
+  // Size presets - standardized to hero button padding (px-6) and text size (text-sm sm:text-base)
   const sizeStyles: Record<HoverButtonSize, string> = {
     sm: "h-8 sm:h-8.5 px-3.5 sm:px-4 text-xs sm:text-sm rounded-lg",
     md: "h-11 px-6 text-sm sm:text-base rounded-xl",
-    lg: "h-12 px-7 text-sm sm:text-base rounded-xl",
+    lg: "h-11 px-6 text-sm sm:text-base rounded-xl",
   }
 
   // Variant definitions - using the exact same gradient colors (#70CAB9, #a3e7db, #ffffff) for both resting and hover effect

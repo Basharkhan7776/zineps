@@ -45,7 +45,7 @@ export function LogisticsOsSection() {
                 href="https://app.zineps.com/Account/Register"
                 target="_blank"
                 rel="noopener noreferrer"
-                size="lg"
+                size="md"
                 className="shadow-md"
               >
                 Become a partner

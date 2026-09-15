@@ -40,7 +40,7 @@ export function ShippingAiBanner() {
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="white"
-                size="lg"
+                size="md"
                 className="shadow-lg group"
               >
                 <span>Discover Shipping AI</span>

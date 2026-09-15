@@ -77,8 +77,8 @@ export function DifferentiationSection() {
               </div>
               <HoverButton
                 type="submit"
-                size="lg"
-                className="whitespace-nowrap px-6"
+                size="md"
+                className="whitespace-nowrap"
               >
                 {subscribed ? "Subscribed! ✓" : "Subscribe"}
               </HoverButton>

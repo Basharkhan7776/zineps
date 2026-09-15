@@ -44,7 +44,7 @@ export function App() {
             fogDepth={40}
             detail="high"
             brightness={0.88}
-            opacity={0.96}
+            opacity={0.86}
             mouseInteraction={false}
             parallaxStrength={0}
             grain={false}
@@ -70,6 +70,9 @@ export function App() {
         {/* Partner Rates & Network Power */}
         <PartnerRatesSection />
 
+        {/* 100+ Integrations Infinite Scrolling Ticker */}
+        <IntegrationsSection />
+
         {/* Interactive E-commerce vs B2B Tabs */}
         <ShippingProcessTabs />
 
@@ -82,8 +85,6 @@ export function App() {
         {/* Logistics Operating System for Partners */}
         <LogisticsOsSection />
 
-        {/* 100+ Integrations Infinite Scrolling Ticker */}
-        <IntegrationsSection />
 
         {/* Differentiation & Aceternity Card Hover Grid */}
         <DifferentiationSection />

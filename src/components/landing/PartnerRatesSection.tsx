@@ -1,94 +1,270 @@
-import { HoverButton } from "@/components/ui/hover-button"
-export function PartnerRatesSection() {
+import { useState, useEffect, useRef } from "react"
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useInView,
+} from "framer-motion"
+
+function AnimatedCounter({
+  value,
+  label,
+  inView,
+}: {
+  value: number
+  label: string
+  inView: boolean
+}) {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    if (!inView) return
+
+    let start: number | null = null
+    const duration = 1600
+
+    let animId: number
+    const update = (now: number) => {
+      if (!start) start = now
+      const elapsed = now - start
+      const progress = Math.min(1, elapsed / duration)
+      // Smooth quartic ease-out
+      const ease = 1 - Math.pow(1 - progress, 4)
+      setCount(Math.round(ease * value))
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(update)
+      }
+    }
+
+    animId = requestAnimationFrame(update)
+    return () => cancelAnimationFrame(animId)
+  }, [inView, value])
+
+  const displayCount = inView ? count : 0
+
   return (
-    <section id="partner-rates" className="relative py-14 md:py-20">
-      <div className="w-full max-w-[1523px] mx-auto px-4 sm:px-6 md:px-[73px]">
-        <div
-          className="rounded-3xl p-8 md:p-12 lg:p-16 relative overflow-hidden shadow-2xl"
+    <div className="flex flex-col">
+      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-1 tracking-tight font-sans">
+        +{displayCount.toLocaleString()}
+      </div>
+      <div className="text-[11px] sm:text-xs text-white/80 uppercase tracking-wider font-semibold">
+        {label}
+      </div>
+    </div>
+  )
+}
+
+export function PartnerRatesSection() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false
+  )
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  // Scroll tracking across the pinned track
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  })
+
+  const inView = useInView(cardRef, { amount: 0.25 })
+
+  // Expansion from centered rounded card to 100% full screen, then reversing to desnap
+  const width = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.65, 1],
+    ["92vw", "100vw", "100vw", "92vw"]
+  )
+
+  const height = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.65, 1],
+    ["82vh", "100vh", "100vh", "82vh"]
+  )
+
+  const borderRadius = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.65, 1],
+    ["32px", "0px", "0px", "32px"]
+  )
+
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.65, 1],
+    [0.96, 1, 1, 0.96]
+  )
+
+  // Spring smoothing for 3D rotation and depth transforms
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 25,
+    mass: 0.5,
+    restDelta: 0.0001,
+  })
+
+  // 3D Perspective Transforms matching storyboard:
+  // Panel 1 ("start"): Tilted backward in 3D perspective trapezoid
+  // Panel 2 ("middle snap"): Leveled completely flat (0deg)
+  // Panel 3 ("end"): Tilts back into 3D perspective trapezoid
+  const tabletRotateX = useTransform(
+    smoothProgress,
+    [0, 0.35, 0.65, 1],
+    isMobile ? [20, 0, 0, 20] : [28, 0, 0, 28]
+  )
+
+  const tabletRotateZ = useTransform(
+    smoothProgress,
+    [0, 0.35, 0.65, 1],
+    isMobile ? [-2, 0, 0, -2] : [-3.5, 0, 0, -3.5]
+  )
+
+  const tabletTranslateZ = useTransform(
+    smoothProgress,
+    [0, 0.35, 0.65, 1],
+    isMobile ? [-30, 0, 0, -30] : [-55, 0, 0, -55]
+  )
+
+  const tabletScale = useTransform(
+    smoothProgress,
+    [0, 0.35, 0.65, 1],
+    isMobile ? [0.96, 1, 1, 0.96] : [0.94, 1, 1, 0.94]
+  )
+
+  // Depth falloff lighting shadow on top edge (darker when tilted away, clear when flat)
+  const topDepthOpacity = useTransform(
+    smoothProgress,
+    [0, 0.35, 0.65, 1],
+    [0.55, 0, 0, 0.55]
+  )
+
+  return (
+    <section
+      id="partner-rates"
+      ref={containerRef}
+      className="relative w-full h-[260vh] bg-white"
+    >
+      {/* Sticky viewport pinned while scrolling through this section */}
+      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden z-20">
+        <motion.div
+          ref={cardRef}
           style={{
+            width,
+            height,
+            borderRadius,
+            scale,
             background:
-              "linear-gradient(to bottom, #60948A 0%, #4a7569 50%, #3d5f56 100%)",
+              "linear-gradient(135deg, #5b8e82 0%, #446e63 45%, #2a4740 100%)",
           }}
+          className="relative overflow-hidden flex items-center justify-center shadow-2xl will-change-transform"
         >
-          {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          {/* Subtle decorative background ambient glow */}
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-[480px] h-[480px] bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-[380px] h-[380px] bg-[#70CAB9]/15 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center relative z-10">
-            {/* Left Content */}
-            <div className="flex flex-col">
+          {/* Content Container */}
+          <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 sm:px-10 md:px-14 lg:px-16 py-6 md:py-10 max-h-screen overflow-y-auto lg:overflow-visible">
+            <div className="grid lg:grid-cols-12 gap-8 md:gap-12 lg:gap-14 items-stretch">
+              {/* Left Content (7 cols): flex justify-between h-full matches the height of image */}
+              <div className="lg:col-span-7 flex flex-col justify-between h-full py-1">
+                {/* Top: Title & Description */}
+                <div>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[44px] font-bold text-white mb-4 leading-[1.15] tracking-tight">
+                    Their buying power becomes yours
+                  </h2>
 
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-                Their buying power becomes yours
-              </h2>
-
-              <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-[540px]">
-                Logistics partners on Zineps already have high-volume deals with DHL, PostNL, DPD, and dozens of others. We match you with the partner whose lanes fit your store best. Use partner shipping rates, your own contracts, or both, from a single unified dashboard.
-              </p>
-
-              {/* Stats Counters */}
-              <div className="flex flex-wrap gap-6 sm:gap-10 md:gap-12">
-                <div className="flex flex-col">
-                  <div className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-2">
-                    +20
-                  </div>
-                  <div className="text-xs md:text-sm text-white/80 uppercase tracking-wider font-medium">
-                    Shipping Partners
-                  </div>
+                  <p className="text-xs sm:text-sm md:text-base text-white/90 leading-relaxed max-w-[520px]">
+                    Logistics partners on Zineps already have high-volume deals with DHL, PostNL, DPD, and dozens of others. We match you with the partner whose lanes fit your store best. Use partner shipping rates, your own contracts, or both, from a single unified dashboard.
+                  </p>
                 </div>
-                <div className="flex flex-col">
-                  <div className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-2">
-                    +200
-                  </div>
-                  <div className="text-xs md:text-sm text-white/80 uppercase tracking-wider font-medium">
-                    Destination Countries
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-2">
-                    +1000
-                  </div>
-                  <div className="text-xs md:text-sm text-white/80 uppercase tracking-wider font-medium">
-                    Shipping Methods
-                  </div>
+
+                {/* Bottom: Stats Counters (One line on desktop) */}
+                <div className="flex flex-wrap md:flex-nowrap items-start gap-6 sm:gap-8 lg:gap-10 pt-6 sm:pt-8">
+                  <AnimatedCounter
+                    value={20}
+                    label="Shipping Partners"
+                    inView={inView}
+                  />
+                  <AnimatedCounter
+                    value={200}
+                    label="Destination Countries"
+                    inView={inView}
+                  />
+                  <AnimatedCounter
+                    value={1000}
+                    label="Shipping Methods"
+                    inView={inView}
+                  />
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="mt-10 flex flex-col sm:flex-row flex-wrap gap-4">
-                <HoverButton
-                  href="https://app.zineps.com/Account/Register/new/7/SD"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="white"
-                  size="lg"
-                  className="shadow-md font-semibold text-[#3d5f56]"
-                >
-                  Start for free
-                </HoverButton>
-                <HoverButton
-                  href="#faq"
-                  variant="outline"
-                  size="lg"
-                  className="border-white/60 text-white bg-transparent hover:bg-white/15"
-                >
-                  How partner rates work
-                </HoverButton>
-              </div>
-            </div>
+              {/* Right Mockup (5 cols) with 3D perspective viewport */}
+              <div
+                className="lg:col-span-5 flex items-center justify-center w-full"
+                style={{ perspective: "1000px" }}
+              >
+                <div className="relative w-full max-w-[540px] lg:max-w-[620px] px-1 sm:px-2">
+                  {/* Ambient Top Backlight Glow for 3D spatial depth */}
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-4/5 h-20 bg-gradient-to-b from-[#70CAB9]/25 to-transparent blur-2xl pointer-events-none rounded-full" />
 
-            {/* Right Mockup */}
-            <div className="relative flex items-center justify-center h-full">
-              <div className="relative w-full max-w-[620px] overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl bg-white/95 border border-white/20 p-1">
-                <img
-                  src="/carrier-broker-mockup.svg"
-                  alt="Zineps partner rates and carrier broker mockup"
-                  className="w-full h-auto object-contain select-none"
-                  loading="lazy"
-                />
+                  {/* 3D Tilting Tablet Frame matching Hero Section */}
+                  <motion.div
+                    style={{
+                      rotateX: tabletRotateX,
+                      rotateZ: tabletRotateZ,
+                      z: tabletTranslateZ,
+                      scale: tabletScale,
+                      transformStyle: "preserve-3d",
+                      willChange: "transform",
+                      boxShadow:
+                        "0 12px 36px -6px rgba(0, 0, 0, 0.35), 0 24px 48px -12px rgba(0, 0, 0, 0.25)",
+                    }}
+                    className="transform-gpu w-full border-[2.5px] border-[#3b4758] border-t-[3.5px] border-t-white/30 p-2 sm:p-2.5 md:p-3 bg-gradient-to-b from-[#242c38] via-[#1a2028] to-[#12161c] rounded-[22px] sm:rounded-[30px] md:rounded-[38px] relative"
+                  >
+                    {/* Extruded top rim highlight bevel */}
+                    <div className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none z-30" />
+
+                    {/* Tablet Screen Container with Inner Depth and Gloss */}
+                    <div className="relative w-full overflow-hidden rounded-[14px] sm:rounded-[20px] md:rounded-[28px] bg-black shadow-[inset_0_0_20px_rgba(0,0,0,0.95)] border border-white/10">
+                      {/* Subtle diagonal glass gloss reflection */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent pointer-events-none z-20" />
+
+                      {/* Realistic depth falloff shadow on the top edge (stronger when tilted back) */}
+                      <motion.div
+                        style={{ opacity: topDepthOpacity }}
+                        className="absolute top-0 inset-x-0 h-28 sm:h-36 bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-none z-20 will-change-opacity"
+                      />
+
+                      {/* Inner bezel depth border & shadow */}
+                      <div className="absolute inset-0 shadow-[inset_0_1px_3px_rgba(255,255,255,0.2),inset_0_0_25px_rgba(0,0,0,0.85)] pointer-events-none z-20" />
+
+                      {/* Mockup Screen Image */}
+                      <img
+                        src="/carrier-broker-mockup.svg"
+                        alt="Zineps partner rates and carrier broker mockup"
+                        className="w-full h-auto object-contain select-none block"
+                        loading="lazy"
+                      />
+                    </div>
+                  </motion.div>
+
+                  {/* Ambient Depth Contact Shadow */}
+                  <div className="w-[75%] mx-auto h-3.5 bg-black/30 blur-lg rounded-full mt-2 pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

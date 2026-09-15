@@ -35,7 +35,7 @@ export function CtaSection() {
                   target="_blank"
                   rel="noopener noreferrer"
                   size="md"
-                  className="h-10 px-5 text-sm"
+                  className="shadow-sm"
                 >
                   <span>Start shipping</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -57,7 +57,7 @@ export function CtaSection() {
                   href="#logistics-os"
                   variant="secondary"
                   size="md"
-                  className="h-10 px-5 text-sm"
+                  className="shadow-sm"
                 >
                   <span>I am a logistics partner</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -84,15 +84,15 @@ export function CtaSection() {
                 href="https://app.zineps.com/Account/Register"
                 target="_blank"
                 rel="noopener noreferrer"
-                size="lg"
+                size="md"
                 className="shadow-md"
               >
-                Start your free trial
+                Start your trial
               </HoverButton>
               <HoverButton
                 href="mailto:info@zineps.com"
                 variant="outline"
-                size="lg"
+                size="md"
               >
                 Contact us
               </HoverButton>
