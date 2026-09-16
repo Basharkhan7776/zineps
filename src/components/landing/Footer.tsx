@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { motion, type Variants } from "framer-motion"
 import SideRays from "@/components/SideRays"
+import { rafThrottle, scrollToId } from "@/lib/runtime"
 
 function ZinepsEmblem({ className }: { className?: string }) {
   return (
@@ -97,12 +98,14 @@ export function Footer() {
       }, 150)
     }
 
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    window.addEventListener("wheel", handleWheel, { passive: true })
+    const onScroll = rafThrottle(handleScroll)
+    const onWheel = rafThrottle(handleWheel)
+    window.addEventListener("scroll", onScroll, { passive: true })
+    window.addEventListener("wheel", onWheel, { passive: true })
 
     return () => {
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("wheel", handleWheel)
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("wheel", onWheel)
       if (resetTimer.current) clearTimeout(resetTimer.current)
     }
   }, [])
@@ -121,7 +124,8 @@ export function Footer() {
     },
     down: {
       left: "2%",
-      top: "54%",
+      // Short desktop row: 54%. Tall stacked mobile: pin to the bottom edge.
+      top: "max(54%, calc(100% - 14rem))",
       rotate: 0,
       transition: {
         duration: 1.6,
@@ -178,13 +182,12 @@ export function Footer() {
           <motion.div
             variants={motionVariants}
             animate={direction}
-            className="absolute w-72 h-72 sm:w-88 sm:h-88 md:w-96 md:h-96 lg:w-[420px] lg:h-[420px] opacity-60 pointer-events-none transform-gpu will-change-transform"
+            className="absolute bottom-auto w-72 h-72 sm:w-88 sm:h-88 md:w-96 md:h-96 lg:w-[420px] lg:h-[420px] opacity-60 pointer-events-none transform-gpu will-change-transform"
           >
-            {/* Ambient slow idle rotation */}
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
-              className="w-full h-full"
+              className="w-full h-full motion-reduce:animate-none"
             >
               <ZinepsEmblem className="w-full h-full object-contain" />
             </motion.div>
@@ -199,7 +202,7 @@ export function Footer() {
             {/* 4 Structured Columns with Increased Height and Vertical Dividers */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-x divide-gray-200/60 bg-transparent">
               {/* Column 1: Logo & Copyright */}
-              <div className="flex flex-col justify-start py-14 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 min-h-[360px] lg:min-h-[480px]">
+              <div className="flex flex-col justify-start py-10 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 lg:min-h-[480px]">
                 <a href="/" className="inline-block mb-6 group">
                   <img
                     src="/zineps-logo.svg"
@@ -214,7 +217,7 @@ export function Footer() {
               </div>
 
               {/* Column 2: Products */}
-              <div className="py-14 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 min-h-[360px] lg:min-h-[480px]">
+              <div className="py-10 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 lg:min-h-[480px]">
                 <h4 className="text-[#1f2937] font-semibold text-base sm:text-lg mb-6 sm:mb-8 tracking-tight">
                   Products
                 </h4>
@@ -227,8 +230,7 @@ export function Footer() {
                         e.preventDefault()
                         window.history.pushState(null, "", "#process-tabs")
                         window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index: 0 } }))
-                        const el = document.getElementById("process-tabs")
-                        if (el) el.scrollIntoView({ behavior: "smooth" })
+                        scrollToId("process-tabs")
                       }}
                       className="text-[#525151] hover:text-[#0f7f75] transition-colors leading-relaxed block"
                     >
@@ -242,8 +244,7 @@ export function Footer() {
                         e.preventDefault()
                         window.history.pushState(null, "", "#logistics-os")
                         window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index: 2 } }))
-                        const el = document.getElementById("logistics-os")
-                        if (el) el.scrollIntoView({ behavior: "smooth" })
+                        scrollToId("logistics-os")
                       }}
                       className="text-[#525151] hover:text-[#0f7f75] transition-colors leading-relaxed block"
                     >
@@ -278,7 +279,7 @@ export function Footer() {
               </div>
 
               {/* Column 3: Company */}
-              <div className="py-14 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 min-h-[360px] lg:min-h-[480px]">
+              <div className="py-10 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 lg:min-h-[480px]">
                 <h4 className="text-[#1f2937] font-semibold text-base sm:text-lg mb-6 sm:mb-8 tracking-tight">
                   Company
                 </h4>
@@ -338,7 +339,7 @@ export function Footer() {
               </div>
 
               {/* Column 4: Contact with LinkedIn and X Links */}
-              <div className="py-14 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 min-h-[360px] lg:min-h-[480px]">
+              <div className="py-10 sm:py-20 lg:py-28 px-6 sm:px-8 lg:px-12 lg:min-h-[480px]">
                 <h4 className="text-[#1f2937] font-semibold text-base sm:text-lg mb-6 sm:mb-8 tracking-tight">
                   Contact
                 </h4>

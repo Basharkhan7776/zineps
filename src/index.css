@@ -127,8 +127,22 @@
   html {
     @apply font-sans scroll-smooth;
   }
+  html,
+  body {
+    overflow-x: clip;
+  }
   html.lenis {
     scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-marquee-slow,
+  .animate-marquee-rev-slow {
+    animation: none !important;
   }
 }
 

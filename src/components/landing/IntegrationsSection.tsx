@@ -1,29 +1,30 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { HoverButton } from "@/components/ui/hover-button"
 import { FadeBlur, motion, useInView } from "@/components/ui/motion"
+import { debounce, getDeviceProfile, observeVisibility } from "@/lib/runtime"
 
 const LOGOS = [
-  { name: "Bpost", src: "/hero-bpost.svg" },
-  { name: "Bol", src: "/hero-bol.svg" },
-  { name: "PostNL", src: "/hero-postnl.svg" },
-  { name: "Temu", src: "/hero-temu.svg" },
-  { name: "DHL", src: "/hero-dhl.svg" },
-  { name: "Amazon", src: "/hero-amazon.svg" },
-  { name: "DPD", src: "/hero-dpd.svg" },
-  { name: "Shopify", src: "/hero-shopify.svg" },
-  { name: "Correos", src: "/hero-correos.svg" },
-  { name: "UPS", src: "/hero-ups.svg" },
-  { name: "Magento", src: "/hero-magento.svg" },
-  { name: "GLS", src: "/hero-gls.svg" },
-  { name: "WooCommerce", src: "/hero-woo.svg" },
-  { name: "Fedex", src: "/hero-fedex.svg" },
-  { name: "DB Schenker", src: "/db-schenker-logo.svg" },
-  { name: "CCV Shop", src: "/ccv-shop-logo.svg" },
-  { name: "SnelStart", src: "/snelstart-logo.svg" },
-  { name: "Exact", src: "/exact-logo.svg" },
+  { name: "Bpost", src: "/logos/bpost.png" },
+  { name: "Bol", src: "/logos/bol.png" },
+  { name: "PostNL", src: "/logos/postnl.png" },
+  { name: "Temu", src: "/logos/temu.png" },
+  { name: "DHL", src: "/logos/dhl.png" },
+  { name: "Amazon", src: "/logos/amazon.png" },
+  { name: "DPD", src: "/logos/dpd.png" },
+  { name: "Shopify", src: "/logos/shopify.png" },
+  { name: "Correos", src: "/logos/correos.png" },
+  { name: "UPS", src: "/logos/ups.png" },
+  { name: "Magento", src: "/logos/magento.png" },
+  { name: "GLS", src: "/logos/gls.png" },
+  { name: "WooCommerce", src: "/logos/woocommerce.png" },
+  { name: "Fedex", src: "/logos/fedex.png" },
+  { name: "DB Schenker", src: "/logos/db-schenker.png" },
+  { name: "CCV Shop", src: "/logos/ccv-shop.png" },
+  { name: "SnelStart", src: "/logos/snelstart.png" },
+  { name: "Exact", src: "/logos/exact.png" },
 ]
 
 // Column configurations: direction (1: down, -1: up), cruising speed, and responsive visibility
@@ -77,6 +78,13 @@ const COLUMNS = [
 // Initial fraction offsets (between 0 and 1) so columns start organically staggered
 const INITIAL_FRACTIONS = [0.15, 0.65, 0.35, 0.85, 0.25, 0.75, 0.45, 0.95]
 
+function visibleColumnCount() {
+  if (typeof window === "undefined") return 4
+  if (window.innerWidth >= 1024) return 8
+  if (window.innerWidth >= 640) return 6
+  return 4
+}
+
 export function IntegrationsSection() {
   const containerRef = useRef<HTMLElement>(null)
   const singleSetRef = useRef<HTMLDivElement>(null)
@@ -88,6 +96,7 @@ export function IntegrationsSection() {
     amount: 0.2,
     once: false,
   })
+  const [colCount, setColCount] = useState(visibleColumnCount)
 
   useEffect(() => {
     let singleHeight = 0
@@ -112,7 +121,11 @@ export function IntegrationsSection() {
     }
 
     updateHeight()
-    window.addEventListener("resize", updateHeight)
+    const onResize = debounce(() => {
+      updateHeight()
+      setColCount(visibleColumnCount())
+    }, 150)
+    window.addEventListener("resize", onResize)
 
     const ro = new ResizeObserver(() => {
       updateHeight()
@@ -137,7 +150,13 @@ export function IntegrationsSection() {
       container.addEventListener("wheel", handleWheel, { passive: true })
     }
 
+    let isVisible = true
+    let isPageVisible = !document.hidden
+    const freezeMotion = getDeviceProfile().prefersReducedMotion
+    let running = false
+
     const render = (now: number) => {
+      if (!running) return
       const dt = Math.min((now - lastTime) / 1000, 0.1)
       lastTime = now
 
@@ -190,14 +209,45 @@ export function IntegrationsSection() {
         colEl.style.transform = `translate3d(0, ${currentYs.current[i]}px, 0)`
       }
 
+      if (freezeMotion || !isVisible || !isPageVisible) {
+        running = false
+        return
+      }
       animId = requestAnimationFrame(render)
     }
 
-    animId = requestAnimationFrame(render)
+    const tryStart = () => {
+      if (freezeMotion) return
+      if (isVisible && isPageVisible && !running) {
+        running = true
+        lastTime = performance.now()
+        animId = requestAnimationFrame(render)
+      }
+    }
+
+    const unobserve = container
+      ? observeVisibility(container, (visible) => {
+          isVisible = visible
+          if (visible) tryStart()
+          else running = false
+        })
+      : () => {}
+
+    const onPageVisibility = () => {
+      isPageVisible = !document.hidden
+      if (isPageVisible) tryStart()
+      else running = false
+    }
+    document.addEventListener("visibilitychange", onPageVisibility)
+
+    tryStart()
 
     return () => {
+      running = false
       cancelAnimationFrame(animId)
-      window.removeEventListener("resize", updateHeight)
+      window.removeEventListener("resize", onResize)
+      document.removeEventListener("visibilitychange", onPageVisibility)
+      unobserve()
       ro.disconnect()
       if (container) {
         container.removeEventListener("wheel", handleWheel)
@@ -215,20 +265,18 @@ export function IntegrationsSection() {
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">
         <div className="w-full max-w-[1523px] mx-auto px-4 sm:px-6 md:px-[73px] h-full flex items-start">
           <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4 sm:gap-6 w-full h-full items-start">
-            {COLUMNS.map((col, colIdx) => (
+            {COLUMNS.slice(0, colCount).map((col, colIdx) => (
               <div
                 key={colIdx}
                 ref={(el) => {
                   columnRefs.current[colIdx] = el
                 }}
-                className={`flex flex-col will-change-transform ${col.visibility}`}
+                className="flex flex-col will-change-transform"
                 style={{
-                  // Pre-align columns with exact fractional offsets so there is 0 flash before JS executes
                   transform: `translate3d(0, -${(INITIAL_FRACTIONS[colIdx] * 20).toFixed(2)}%, 0)`,
                 }}
               >
-                {/* 5 duplicate sets for 100% continuous, seamless vertical wrapping without seams */}
-                {[0, 1, 2, 3, 4].map((setIdx) => (
+                {[0, 1].map((setIdx) => (
                   <div
                     key={setIdx}
                     ref={colIdx === 0 && setIdx === 0 ? singleSetRef : undefined}

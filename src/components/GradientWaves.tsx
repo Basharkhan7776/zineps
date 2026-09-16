@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { getCanvasDpr, getDeviceProfile } from '@/lib/runtime';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
 
 export type GradientWavesDetail = 'low' | 'medium' | 'high';
@@ -223,7 +224,7 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
       alpha: true,
       premultipliedAlpha: true,
       antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
+      dpr: getCanvasDpr()
     });
 
     const gl = renderer.gl;
@@ -309,10 +310,11 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
     let raf = 0;
     let isVisible = true;
     let isPageVisible = !document.hidden;
+    const freezeMotion = getDeviceProfile().prefersReducedMotion;
     const t0 = performance.now();
 
     const loop = (t: number) => {
-      (program.uniforms.iTime as { value: number }).value = (t - t0) * 0.001;
+      (program.uniforms.iTime as { value: number }).value = freezeMotion ? 0 : (t - t0) * 0.001;
       if (enableMouseRef.current) {
         currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
         currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
@@ -324,6 +326,10 @@ const GradientWaves: React.FC<GradientWavesProps> = ({
       m[0] = currentMouse[0];
       m[1] = currentMouse[1];
       renderer.render({ scene: mesh });
+      if (freezeMotion) {
+        raf = 0;
+        return;
+      }
       raf = requestAnimationFrame(loop);
     };
 

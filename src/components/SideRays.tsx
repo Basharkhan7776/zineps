@@ -1,5 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { Renderer, Program, Triangle, Mesh } from 'ogl';
+import { getCanvasDpr, getDeviceProfile, observeVisibility, debounce } from '@/lib/runtime';
 
 type Origin = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 
@@ -52,32 +53,9 @@ const SideRays = ({
   const animationIdRef = useRef<number | null>(null);
   const meshRef = useRef<Mesh | null>(null);
   const cleanupFunctionRef = useRef<(() => void) | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
-
-    observerRef.current = new IntersectionObserver(
-      entries => {
-        const entry = entries[0];
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-
-    observerRef.current.observe(containerRef.current);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isVisible || !containerRef.current) return;
 
     if (cleanupFunctionRef.current) {
       cleanupFunctionRef.current();
@@ -92,7 +70,7 @@ const SideRays = ({
       if (!containerRef.current) return;
 
       const renderer = new Renderer({
-        dpr: Math.min(window.devicePixelRatio, 2),
+        dpr: getCanvasDpr(),
         alpha: true
       });
       rendererRef.current = renderer;
@@ -225,33 +203,73 @@ void main() {
 
       const updateSize = () => {
         if (!containerRef.current || !renderer) return;
-        renderer.dpr = Math.min(window.devicePixelRatio, 2);
+        renderer.dpr = getCanvasDpr();
         const { clientWidth: w, clientHeight: h } = containerRef.current;
         renderer.setSize(w, h);
         uniforms.iResolution.value = [w * renderer.dpr, h * renderer.dpr];
       };
 
+      const freezeMotion = getDeviceProfile().prefersReducedMotion;
+      let isVisible = true;
+      let isPageVisible = !document.hidden;
+
       const loop = (t: number) => {
         if (!rendererRef.current || !uniformsRef.current || !meshRef.current) return;
-        uniforms.iTime.value = t * 0.001;
+        uniforms.iTime.value = freezeMotion ? 0 : t * 0.001;
         try {
           renderer.render({ scene: mesh });
+          if (freezeMotion || !isVisible || !isPageVisible) {
+            animationIdRef.current = null;
+            return;
+          }
           animationIdRef.current = requestAnimationFrame(loop);
         } catch {
           return;
         }
       };
 
-      window.addEventListener('resize', updateSize);
+      const tryStart = () => {
+        if (isVisible && isPageVisible && animationIdRef.current === null && !freezeMotion) {
+          animationIdRef.current = requestAnimationFrame(loop);
+        }
+      };
+
+      const onResize = debounce(updateSize, 150);
+      window.addEventListener('resize', onResize);
       updateSize();
-      animationIdRef.current = requestAnimationFrame(loop);
+      if (freezeMotion) {
+        loop(0);
+      } else {
+        animationIdRef.current = requestAnimationFrame(loop);
+      }
+
+      const unobserve = observeVisibility(containerRef.current, (visible) => {
+        isVisible = visible;
+        if (visible) tryStart();
+        else if (animationIdRef.current) {
+          cancelAnimationFrame(animationIdRef.current);
+          animationIdRef.current = null;
+        }
+      }, { threshold: 0.1 });
+
+      const onPageVisibility = () => {
+        isPageVisible = !document.hidden;
+        if (isPageVisible) tryStart();
+        else if (animationIdRef.current) {
+          cancelAnimationFrame(animationIdRef.current);
+          animationIdRef.current = null;
+        }
+      };
+      document.addEventListener('visibilitychange', onPageVisibility);
 
       cleanupFunctionRef.current = () => {
         if (animationIdRef.current) {
           cancelAnimationFrame(animationIdRef.current);
           animationIdRef.current = null;
         }
-        window.removeEventListener('resize', updateSize);
+        window.removeEventListener('resize', onResize);
+        unobserve();
+        document.removeEventListener('visibilitychange', onPageVisibility);
         if (renderer) {
           try {
             const loseCtx = renderer.gl.getExtension('WEBGL_lose_context');
@@ -276,7 +294,7 @@ void main() {
         cleanupFunctionRef.current = null;
       }
     };
-  }, [isVisible, speed, rayColor1, rayColor2, intensity, spread, origin, tilt, saturation, blend, falloff, opacity]);
+  }, [speed, rayColor1, rayColor2, intensity, spread, origin, tilt, saturation, blend, falloff, opacity]);
 
   useEffect(() => {
     if (!uniformsRef.current) return;

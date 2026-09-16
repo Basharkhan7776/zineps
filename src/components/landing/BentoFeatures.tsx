@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { debounce } from "@/lib/runtime"
 import {
   motion,
   AnimatePresence,
@@ -32,8 +33,9 @@ export function BentoFeatures() {
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024)
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
+    const onResize = debounce(checkMobile, 150)
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
   }, [])
 
   // 1. Scroll tracking across the pinned track
@@ -82,7 +84,7 @@ export function BentoFeatures() {
     <section
       id="platform-capabilities"
       ref={containerRef}
-      className="relative w-full h-[400vh] bg-white snap-y snap-proximity"
+      className="relative w-full h-[280vh] lg:h-[400vh] bg-white snap-y snap-proximity"
     >
       {/* 4 Discrete Scroll Snap Anchors */}
       <div className="absolute inset-0 pointer-events-none flex flex-col">
@@ -93,7 +95,7 @@ export function BentoFeatures() {
       </div>
 
       {/* Sticky viewport pinned while scrolling through all 4 feature stages */}
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden z-20">
+      <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden z-20">
         <div
           ref={cardContainerRef}
           className="relative overflow-hidden w-full h-full flex flex-col justify-between shadow-[0_25px_70px_rgba(0,0,0,0.06)] bg-white text-[#424242] select-none will-change-transform border border-gray-100"
@@ -112,7 +114,7 @@ export function BentoFeatures() {
 
           {/* Connecting Line between Globe Point and Card (Appears ONLY when snapped) */}
           <AnimatePresence>
-            {pointPos?.isSnapped && pointPos.visible && cardAnchor && (
+            {!isMobile && pointPos?.isSnapped && pointPos.visible && cardAnchor && (
               <motion.svg
                 key={`snap-line-${activeStage}`}
                 initial={{ opacity: 0 }}
@@ -197,13 +199,13 @@ export function BentoFeatures() {
 
           {/* Middle Content Zone: 4 Frosted Glass Bento Cards with Inner Text Blur Fade */}
           <div className="relative z-20 w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 flex-1 flex items-center">
-            <div className="grid lg:grid-cols-12 w-full items-center gap-8 min-h-[480px]">
+            <div className="grid lg:grid-cols-12 w-full items-center gap-8 min-h-[260px] lg:min-h-[480px] relative">
               {/* LEFT COLUMN: Cards 1 and 3 emerge here (Globe is on Right) */}
-              <div className="lg:col-span-6 relative h-full min-h-[380px] flex items-center justify-center lg:justify-start">
+              <div className="lg:col-span-6 relative h-full min-h-[240px] lg:min-h-[380px] flex items-center justify-center lg:justify-start absolute lg:static inset-x-0 top-0 z-10">
                 {/* Card 1: One platform for everything (Stage 0, Left) */}
                 <div
                   ref={card0Ref}
-                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-8 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
+                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-6 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
                     activeStage === 0 && isSnapped
                       ? "opacity-100 pointer-events-auto translate-y-0 scale-100"
                       : "opacity-0 pointer-events-none translate-y-3 scale-[0.98]"
@@ -245,7 +247,7 @@ export function BentoFeatures() {
                 {/* Card 3: Real-time Analytics (Stage 2, Left) */}
                 <div
                   ref={card2Ref}
-                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-8 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
+                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-6 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
                     activeStage === 2 && isSnapped
                       ? "opacity-100 pointer-events-auto translate-y-0 scale-100"
                       : "opacity-0 pointer-events-none translate-y-3 scale-[0.98]"
@@ -286,11 +288,11 @@ export function BentoFeatures() {
               </div>
 
               {/* RIGHT COLUMN: Cards 2 and 4 emerge here (Globe is on Left) */}
-              <div className="lg:col-span-6 relative h-full min-h-[380px] flex items-center justify-center lg:justify-end">
+              <div className="lg:col-span-6 relative h-full min-h-[240px] lg:min-h-[380px] flex items-center justify-center lg:justify-end absolute lg:static inset-x-0 top-0 z-10">
                 {/* Card 2: Fast integrations (Stage 1, Right) */}
                 <div
                   ref={card1Ref}
-                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-8 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
+                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-6 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
                     activeStage === 1 && isSnapped
                       ? "opacity-100 pointer-events-auto translate-y-0 scale-100"
                       : "opacity-0 pointer-events-none translate-y-3 scale-[0.98]"
@@ -332,7 +334,7 @@ export function BentoFeatures() {
                 {/* Card 4: Worldwide Coverage & Uptime (Stage 3, Right) */}
                 <div
                   ref={card3Ref}
-                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-8 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
+                  className={`w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.7)] p-6 sm:p-10 text-[#424242] flex flex-col justify-between absolute overflow-hidden transition-all duration-400 ease-out ${
                     activeStage === 3 && isSnapped
                       ? "opacity-100 pointer-events-auto translate-y-0 scale-100"
                       : "opacity-0 pointer-events-none translate-y-3 scale-[0.98]"

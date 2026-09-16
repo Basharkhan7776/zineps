@@ -11,7 +11,7 @@ export function TrustedByMarquee() {
 
   return (
     <section className="py-10 md:py-16 overflow-hidden">
-      <div className="w-full max-w-[1523px] mx-auto px-4 sm:px-[73px] text-center mb-8">
+      <div className="w-full max-w-[1523px] mx-auto px-4 sm:px-6 md:px-[73px] text-center mb-8">
         <h2 className="text-2xl sm:text-3xl md:text-[45px] font-semibold text-[#424242] tracking-tight">
           Trusted by
         </h2>

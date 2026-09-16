@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect, useCallback } from "react"
+import { debounce } from "@/lib/runtime"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface NewsItem {
@@ -87,15 +88,15 @@ export function RecentNewsSection() {
           {/* 3x3 carrier cards grid */}
           <div className="grid grid-cols-3 gap-2 w-full max-w-[240px] transform -rotate-2 scale-95">
             {[
-              { name: "DHL", logo: "/hero-dhl.svg", bg: "bg-white" },
-              { name: "PostNL", logo: "/hero-postnl.svg", bg: "bg-white" },
-              { name: "DPD", logo: "/hero-dpd.svg", bg: "bg-white" },
-              { name: "GLS", logo: "/hero-gls.svg", bg: "bg-white" },
-              { name: "bpost", logo: "/hero-bpost.svg", bg: "bg-white" },
-              { name: "bol.", logo: "/hero-bol.svg", bg: "bg-white" },
-              { name: "FedEx", logo: "/hero-fedex.svg", bg: "bg-white" },
-              { name: "UPS", logo: "/hero-ups.svg", bg: "bg-white" },
-              { name: "DB Schenker", logo: "/db-schenker-logo.svg", bg: "bg-white" },
+              { name: "DHL", logo: "/logos/dhl.png", bg: "bg-white" },
+              { name: "PostNL", logo: "/logos/postnl.png", bg: "bg-white" },
+              { name: "DPD", logo: "/logos/dpd.png", bg: "bg-white" },
+              { name: "GLS", logo: "/logos/gls.png", bg: "bg-white" },
+              { name: "bpost", logo: "/logos/bpost.png", bg: "bg-white" },
+              { name: "bol.", logo: "/logos/bol.png", bg: "bg-white" },
+              { name: "FedEx", logo: "/logos/fedex.png", bg: "bg-white" },
+              { name: "UPS", logo: "/logos/ups.png", bg: "bg-white" },
+              { name: "DB Schenker", logo: "/logos/db-schenker.png", bg: "bg-white" },
             ].map((carrier, idx) => (
               <div
                 key={idx}
@@ -166,7 +167,7 @@ export function RecentNewsSection() {
             className="absolute inset-0 bg-cover bg-center opacity-85 scale-105"
             style={{
               backgroundImage:
-                "url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=700&q=80')",
+                "url('/news/recap-2025.jpg')",
             }}
           />
 
@@ -229,7 +230,7 @@ export function RecentNewsSection() {
             className="absolute inset-0 bg-cover bg-center opacity-75 scale-105"
             style={{
               backgroundImage:
-                "url('https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=700&q=80')",
+                "url('/news/doordash-air.jpg')",
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
@@ -264,11 +265,12 @@ export function RecentNewsSection() {
 
     updateScrollProgress()
     el.addEventListener("scroll", updateScrollProgress, { passive: true })
-    window.addEventListener("resize", updateScrollProgress)
+    const onResize = debounce(updateScrollProgress, 150)
+    window.addEventListener("resize", onResize)
 
     return () => {
       el.removeEventListener("scroll", updateScrollProgress)
-      window.removeEventListener("resize", updateScrollProgress)
+      window.removeEventListener("resize", onResize)
     }
   }, [updateScrollProgress])
 

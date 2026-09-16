@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
+import { debounce } from "@/lib/runtime"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface FaqItem {
@@ -120,7 +121,7 @@ export function FaqSection() {
   }, [openIndex, updateCardPosition])
 
   useEffect(() => {
-    const handleResize = () => updateCardPosition(openIndex)
+    const handleResize = debounce(() => updateCardPosition(openIndex), 150)
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [openIndex, updateCardPosition])

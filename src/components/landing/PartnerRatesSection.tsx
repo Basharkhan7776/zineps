@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { debounce } from "@/lib/runtime"
 import {
   motion,
   useScroll,
@@ -16,10 +17,15 @@ function AnimatedCounter({
   label: string
   inView: boolean
 }) {
-  const [count, setCount] = useState(0)
+  const countRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!inView) return
+    const el = countRef.current
+    if (!el) return
+    if (!inView) {
+      el.textContent = "+0"
+      return
+    }
 
     let start: number | null = null
     const duration = 1600
@@ -29,9 +35,8 @@ function AnimatedCounter({
       if (!start) start = now
       const elapsed = now - start
       const progress = Math.min(1, elapsed / duration)
-      // Smooth quartic ease-out
       const ease = 1 - Math.pow(1 - progress, 4)
-      setCount(Math.round(ease * value))
+      el.textContent = `+${Math.round(ease * value).toLocaleString()}`
 
       if (progress < 1) {
         animId = requestAnimationFrame(update)
@@ -42,12 +47,13 @@ function AnimatedCounter({
     return () => cancelAnimationFrame(animId)
   }, [inView, value])
 
-  const displayCount = inView ? count : 0
-
   return (
     <div className="flex flex-col">
-      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-1 tracking-tight font-sans">
-        +{displayCount.toLocaleString()}
+      <div
+        ref={countRef}
+        className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-1 tracking-tight font-sans"
+      >
+        +0
       </div>
       <div className="text-[11px] sm:text-xs text-white/80 uppercase tracking-wider font-semibold">
         {label}
@@ -68,8 +74,9 @@ export function PartnerRatesSection() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768)
     }
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
+    const onResize = debounce(checkMobile, 150)
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
   }, [])
 
   // Scroll tracking across the pinned track
@@ -152,10 +159,10 @@ export function PartnerRatesSection() {
     <section
       id="partner-rates"
       ref={containerRef}
-      className="relative w-full h-[260vh] bg-white"
+      className="relative w-full h-[220vh] lg:h-[260vh] bg-white"
     >
       {/* Sticky viewport pinned while scrolling through this section */}
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden z-20">
+      <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden z-20">
         <motion.div
           ref={cardRef}
           style={{
@@ -173,7 +180,7 @@ export function PartnerRatesSection() {
           <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-[380px] h-[380px] bg-[#70CAB9]/15 rounded-full blur-3xl pointer-events-none" />
 
           {/* Content Container */}
-          <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 sm:px-10 md:px-14 lg:px-16 py-6 md:py-10 max-h-screen overflow-y-auto lg:overflow-visible">
+          <div className="relative z-10 w-full max-w-[1440px] mx-auto px-5 sm:px-10 md:px-14 lg:px-16 py-5 md:py-10 max-h-[100dvh] overflow-y-auto lg:overflow-visible">
             <div className="grid lg:grid-cols-12 gap-8 md:gap-12 lg:gap-14 items-stretch">
               {/* Left Content (7 cols): flex justify-between h-full matches the height of image */}
               <div className="lg:col-span-7 flex flex-col justify-between h-full py-1">
@@ -235,7 +242,7 @@ export function PartnerRatesSection() {
                     <div className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none z-30" />
 
                     {/* Tablet Screen Container with Inner Depth and Gloss */}
-                    <div className="relative w-full overflow-hidden rounded-[14px] sm:rounded-[20px] md:rounded-[28px] bg-black shadow-[inset_0_0_20px_rgba(0,0,0,0.95)] border border-white/10">
+                    <div className="relative w-full aspect-[16/10] overflow-hidden rounded-[14px] sm:rounded-[20px] md:rounded-[28px] bg-black shadow-[inset_0_0_20px_rgba(0,0,0,0.95)] border border-white/10">
                       {/* Subtle diagonal glass gloss reflection */}
                       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent pointer-events-none z-20" />
 
@@ -252,7 +259,7 @@ export function PartnerRatesSection() {
                       <img
                         src="/carrier-broker-mockup.svg"
                         alt="Zineps partner rates and carrier broker mockup"
-                        className="w-full h-auto object-contain select-none block"
+                        className="w-full h-full object-cover object-top select-none block"
                         loading="lazy"
                       />
                     </div>

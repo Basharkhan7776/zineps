@@ -1,11 +1,12 @@
 import { ContainerScroll } from "@/components/ui/container-scroll-animation"
 import { HoverButton } from "@/components/ui/hover-button"
+import { scrollToId } from "@/lib/runtime"
 
 export function HeroSection() {
   return (
     <section className="relative w-full overflow-hidden pb-2 md:pb-6">
 
-      <div className="relative z-10 max-w-[1440px] mx-auto px-4">
+      <div className="relative z-10 max-w-[1440px] mt-12 mx-auto px-4">
         {/* Aceternity 3D Perspective Tablet Scroll Hero with enhanced X/Z movement and top depth */}
         <ContainerScroll
           titleComponent={
@@ -41,8 +42,7 @@ export function HeroSection() {
                     e.preventDefault()
                     window.history.pushState(null, "", "#logistics-os")
                     window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index: 2 } }))
-                    const el = document.getElementById("logistics-os")
-                    if (el) el.scrollIntoView({ behavior: "smooth" })
+                    scrollToId("logistics-os")
                   }}
                   variant="outline"
                   size="md"

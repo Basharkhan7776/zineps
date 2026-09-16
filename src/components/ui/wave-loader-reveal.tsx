@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react"
+import { getDeviceProfile } from "@/lib/runtime"
 
 interface WaveLoaderRevealProps {
   onComplete?: () => void
@@ -18,6 +19,12 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
   }, [onComplete])
 
   useEffect(() => {
+    const profile = getDeviceProfile()
+    if (profile.prefersReducedMotion || profile.isLowEnd) {
+      handleSkip()
+      return
+    }
+
     // Gracefully clean up the static HTML pre-curtain as React takes over
     const preCurtain = document.getElementById("pre-react-curtain")
     if (preCurtain) {
@@ -112,12 +119,6 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
           .map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
           .join(" ")
 
-      // Progressive unblur: starts at 28px, smoothly resolves to 0px from rawProgress 0.65 to 1.0
-      const blurAmount =
-        rawProgress < 0.65
-          ? 28
-          : Math.max(0, 28 * (1 - (rawProgress - 0.65) / 0.35))
-
       // Fade out frosted overlay towards end of reveal
       const overlayAlpha =
         rawProgress < 0.75
@@ -138,9 +139,6 @@ export function WaveLoaderReveal({ onComplete }: WaveLoaderRevealProps) {
 
       if (frostOverlayRef.current) {
         frostOverlayRef.current.style.clipPath = polygon
-        const filterVal = `blur(${blurAmount.toFixed(1)}px) saturate(180%) contrast(104%)`
-        frostOverlayRef.current.style.backdropFilter = filterVal
-        frostOverlayRef.current.style.setProperty("-webkit-backdrop-filter", filterVal)
         frostOverlayRef.current.style.opacity = overlayAlpha.toFixed(3)
       }
 

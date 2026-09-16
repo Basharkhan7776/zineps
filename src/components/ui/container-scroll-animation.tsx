@@ -1,5 +1,6 @@
 "use client"
 import { useRef, useState, useEffect, type ReactNode } from "react"
+import { debounce } from "@/lib/runtime"
 import {
   useScroll,
   useTransform,
@@ -28,9 +29,10 @@ export const ContainerScroll = ({
       setIsMobile(window.innerWidth <= 768)
     }
     checkMobile()
-    window.addEventListener("resize", checkMobile)
+    const onResize = debounce(checkMobile, 150)
+    window.addEventListener("resize", onResize)
     return () => {
-      window.removeEventListener("resize", checkMobile)
+      window.removeEventListener("resize", onResize)
     }
   }, [])
 
@@ -75,7 +77,7 @@ export const ContainerScroll = ({
 
   return (
     <div
-      className="h-[48rem] sm:h-[58rem] md:h-[68rem] flex items-center justify-center relative p-2 md:p-6"
+      className="h-auto min-h-[36rem] sm:h-[58rem] md:h-[68rem] flex items-center justify-center relative p-2 md:p-6"
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -167,13 +169,13 @@ export const TabletCard = ({
           boxShadow:
             "0 8px 24px -4px rgba(0, 0, 0, 0.12), 0 16px 32px -8px rgba(0, 0, 0, 0.08)",
         }}
-        className="transform-gpu max-w-6xl mx-auto w-full border-[2.5px] border-[#3b4758] border-t-[3.5px] border-t-white/30 p-2 sm:p-3 md:p-4 bg-gradient-to-b from-[#242c38] via-[#1a2028] to-[#12161c] rounded-[24px] sm:rounded-[34px] md:rounded-[44px] relative"
+        className="transform-gpu max-w-6xl mx-auto w-full aspect-[16/10] border-[2.5px] border-[#3b4758] border-t-[3.5px] border-t-white/30 p-[1.8%] bg-gradient-to-b from-[#242c38] via-[#1a2028] to-[#12161c] rounded-[6%/9%] relative"
       >
         {/* Extruded top rim highlight bevel */}
         <div className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none z-30" />
 
         {/* Tablet Screen Container with Inner Depth and Gloss */}
-        <div className="relative w-full h-[22rem] sm:h-[30rem] md:h-[44rem] overflow-hidden rounded-[16px] sm:rounded-[24px] md:rounded-[32px] bg-black shadow-[inset_0_0_20px_rgba(0,0,0,0.95)] border border-white/10">
+        <div className="relative w-full h-full overflow-hidden rounded-[4.5%/7%] bg-black shadow-[inset_0_0_20px_rgba(0,0,0,0.95)] border border-white/10">
           {/* Subtle diagonal glass gloss reflection */}
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent pointer-events-none z-20" />
 

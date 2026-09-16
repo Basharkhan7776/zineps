@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
 import type { MotionValue } from "framer-motion"
+import { getCanvasDpr, getDeviceProfile, observeVisibility } from "@/lib/runtime"
 
 // Base64-encoded 2D equirectangular earth landmass bitmap
 const EARTH_MAP_BASE64 =
@@ -141,7 +142,7 @@ export function ThreeGlobe({
     const container = containerRef.current
     if (!container) return
 
-    let animId: number
+    let animId = 0
     let width = container.clientWidth || window.innerWidth
     let height = container.clientHeight || window.innerHeight
 
@@ -151,13 +152,14 @@ export function ThreeGlobe({
     camera.position.set(0, 0, 13.5)
 
     // 2. WebGL Renderer
+    const profile = getDeviceProfile()
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
+      antialias: !profile.isNarrow && !profile.isLowEnd,
+      powerPreference: profile.isLowEnd ? "low-power" : "high-performance",
     })
     renderer.setSize(width, height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    renderer.setPixelRatio(getCanvasDpr())
     container.appendChild(renderer.domElement)
 
     // 3. Globe Root Group
@@ -236,7 +238,8 @@ export function ThreeGlobe({
       },
     })
 
-    const earthGeo = new THREE.SphereGeometry(globeRadius, 64, 64)
+    const sphereSegs = profile.isNarrow || profile.isLowEnd ? 32 : 64
+    const earthGeo = new THREE.SphereGeometry(globeRadius, sphereSegs, sphereSegs)
     const earthMesh = new THREE.Mesh(earthGeo, earthMaterial)
     globeGroup.add(earthMesh)
 
@@ -285,9 +288,15 @@ export function ThreeGlobe({
 
     // 7. Animation Loop with Persistent Glide + 1-Rotation Spin between coordinates
     let rippleClock = 0
+    let animRunning = false
+    let isVisible = true
+    let isPageVisible = !document.hidden
+    const freezeMotion = profile.prefersReducedMotion
+    let lastEmit = { snapped: false, stage: -1, x: 0, y: 0 }
 
     const render = () => {
-      rippleClock += 0.035
+      if (!animRunning) return
+      rippleClock += freezeMotion ? 0 : 0.035
       const now = performance.now()
       const trans = transitionRef.current
       const stage = activeStageRef.current
@@ -383,21 +392,59 @@ export function ThreeGlobe({
         const isFacing = proj.z < 1.0
 
         if (onPointCallbackRef.current) {
-          onPointCallbackRef.current({
-            x: px,
-            y: py,
-            visible: isFacing && isCurrentlySnapped,
-            coordId: stage,
-            isSnapped: isCurrentlySnapped,
-          })
+          const shouldEmit =
+            isCurrentlySnapped !== lastEmit.snapped ||
+            stage !== lastEmit.stage ||
+            (isCurrentlySnapped && (Math.abs(px - lastEmit.x) > 2 || Math.abs(py - lastEmit.y) > 2))
+          if (shouldEmit) {
+            lastEmit = { snapped: isCurrentlySnapped, stage, x: px, y: py }
+            onPointCallbackRef.current({
+              x: px,
+              y: py,
+              visible: isFacing && isCurrentlySnapped,
+              coordId: stage,
+              isSnapped: isCurrentlySnapped,
+            })
+          }
         }
       }
 
       renderer.render(scene, camera)
+      if (freezeMotion) {
+        animRunning = false
+        return
+      }
       animId = requestAnimationFrame(render)
     }
 
-    render()
+    const tryStart = () => {
+      if (isVisible && isPageVisible && !animRunning && !freezeMotion) {
+        animRunning = true
+        animId = requestAnimationFrame(render)
+      } else if (freezeMotion && !animRunning) {
+        animRunning = true
+        render()
+      }
+    }
+    const tryStop = () => {
+      animRunning = false
+      if (animId) cancelAnimationFrame(animId)
+    }
+
+    const unobserve = observeVisibility(container, (visible) => {
+      isVisible = visible
+      if (visible) tryStart()
+      else tryStop()
+    })
+
+    const onVisibility = () => {
+      isPageVisible = !document.hidden
+      if (isPageVisible) tryStart()
+      else tryStop()
+    }
+    document.addEventListener("visibilitychange", onVisibility)
+
+    tryStart()
 
     // 8. Resize Handling
     const handleResize = () => {
@@ -407,16 +454,25 @@ export function ThreeGlobe({
       camera.aspect = width / height
       camera.updateProjectionMatrix()
       renderer.setSize(width, height)
+      renderer.setPixelRatio(getCanvasDpr())
     }
 
     window.addEventListener("resize", handleResize)
 
     return () => {
-      cancelAnimationFrame(animId)
+      tryStop()
+      unobserve()
+      document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("resize", handleResize)
       if (renderer.domElement.parentNode) {
         renderer.domElement.parentNode.removeChild(renderer.domElement)
       }
+      beacons.forEach((b) => {
+        b.dot.geometry.dispose()
+        ;(b.dot.material as THREE.Material).dispose()
+        b.ripple.geometry.dispose()
+        ;(b.ripple.material as THREE.Material).dispose()
+      })
       renderer.dispose()
       earthGeo.dispose()
       earthMaterial.dispose()

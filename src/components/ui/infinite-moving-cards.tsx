@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { debounce, getDeviceProfile, observeVisibility } from "@/lib/runtime"
 
 export const InfiniteMovingCards = ({
   items,
@@ -41,7 +42,8 @@ export const InfiniteMovingCards = ({
     }
 
     updateWidth()
-    window.addEventListener("resize", updateWidth)
+    const onResize = debounce(updateWidth, 150)
+    window.addEventListener("resize", onResize)
 
     let animId: number
     let lastTime = performance.now()
@@ -63,7 +65,13 @@ export const InfiniteMovingCards = ({
       container.addEventListener("wheel", handleWheel, { passive: true })
     }
 
+    let isVisible = true
+    let isPageVisible = !document.hidden
+    const freezeMotion = getDeviceProfile().prefersReducedMotion
+    let running = false
+
     const render = (now: number) => {
+      if (!running) return
       const dt = Math.min((now - lastTime) / 1000, 0.1)
       lastTime = now
 
@@ -103,14 +111,45 @@ export const InfiniteMovingCards = ({
 
       scroller.style.transform = `translate3d(${currentX}px, 0, 0)`
 
+      if (freezeMotion || !isVisible || !isPageVisible) {
+        running = false
+        return
+      }
       animId = requestAnimationFrame(render)
     }
 
-    animId = requestAnimationFrame(render)
+    const tryStart = () => {
+      if (freezeMotion) return
+      if (isVisible && isPageVisible && !running) {
+        running = true
+        lastTime = performance.now()
+        animId = requestAnimationFrame(render)
+      }
+    }
+
+    const unobserve = container
+      ? observeVisibility(container, (visible) => {
+          isVisible = visible
+          if (visible) tryStart()
+          else running = false
+        })
+      : () => {}
+
+    const onPageVisibility = () => {
+      isPageVisible = !document.hidden
+      if (isPageVisible) tryStart()
+      else running = false
+    }
+    document.addEventListener("visibilitychange", onPageVisibility)
+
+    tryStart()
 
     return () => {
+      running = false
       cancelAnimationFrame(animId)
-      window.removeEventListener("resize", updateWidth)
+      window.removeEventListener("resize", onResize)
+      document.removeEventListener("visibilitychange", onPageVisibility)
+      unobserve()
       if (container) {
         container.removeEventListener("wheel", handleWheel)
       }
@@ -136,8 +175,7 @@ export const InfiniteMovingCards = ({
         className="flex w-max flex-nowrap items-center will-change-transform py-4"
         style={{ transform: "translate3d(0, 0, 0)" }}
       >
-        {/* Render 5 duplicate sets for uninterrupted seamless wrapping on all screen sizes */}
-        {[0, 1, 2, 3, 4].map((setIndex) => (
+        {[0, 1].map((setIndex) => (
           <div
             key={setIndex}
             ref={setIndex === 0 ? singleSetRef : undefined}

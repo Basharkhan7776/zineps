@@ -2,6 +2,7 @@
 "use client"
 
 import { forwardRef, useRef, type ReactNode } from "react"
+import { getDeviceProfile } from "@/lib/runtime"
 import {
   motion,
   AnimatePresence,
@@ -119,10 +120,31 @@ export const staggerContainerVariants: Variants = {
   },
   exit: {
     transition: {
-      staggerChildren: 0.05,
+      staggerChildren: 0.04,
       staggerDirection: -1,
     },
   },
+}
+
+/** Carousel panel: next enters from the right, previous from the left. */
+export const slidePanelVariants: Variants = {
+  enter: (dir: number) =>
+    getDeviceProfile().prefersReducedMotion
+      ? { opacity: 0, x: 0 }
+      : { x: dir > 0 ? "100%" : "-100%", opacity: 1 },
+  center: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+  },
+  exit: (dir: number) =>
+    getDeviceProfile().prefersReducedMotion
+      ? { opacity: 0, x: 0, transition: { duration: 0.25 } }
+      : {
+          x: dir > 0 ? "-100%" : "100%",
+          opacity: 1,
+          transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+        },
 }
 
 export interface FadeBlurProps extends HTMLMotionProps<"div"> {
@@ -136,7 +158,8 @@ export interface FadeBlurProps extends HTMLMotionProps<"div"> {
   trigger?: "mount" | "inView"
   once?: boolean
   amount?: number | "some" | "all"
-  as?: "div" | "h1" | "h2" | "h3" | "h4" | "p" | "span" | "section"
+  as?: "div" | "h1" | "h2" | "h3" | "h4" | "p" | "span" | "section" | "li"
+  staggerItem?: boolean
 }
 
 /**
@@ -158,6 +181,7 @@ export const FadeBlur = forwardRef<HTMLDivElement, FadeBlurProps>(
       once = false,
       amount = 0.2,
       as = "div",
+      staggerItem = false,
       ...rest
     },
     ref
@@ -168,30 +192,61 @@ export const FadeBlur = forwardRef<HTMLDivElement, FadeBlurProps>(
 
     const isControlled = typeof inView === "boolean"
     const activeVisible = isControlled ? inView : trigger === "inView" ? selfInView : true
+    const useBlur = !getDeviceProfile().prefersReducedMotion
+    const blurValue = useBlur ? blur : "0px"
+
+    const bindRef = (node: HTMLDivElement | null) => {
+      localRef.current = node
+      if (typeof ref === "function") {
+        ref(node)
+      } else if (ref && "current" in ref) {
+        ref.current = node
+      }
+    }
+
+    if (staggerItem) {
+      return (
+        <Component
+          ref={bindRef}
+          variants={{
+            initial: { opacity: 0, filter: `blur(${blurValue})`, y: yOffset },
+            animate: {
+              opacity: 1,
+              filter: "blur(0px)",
+              y: 0,
+              transition: { duration, ease: [0.16, 1, 0.3, 1] },
+            },
+            exit: {
+              opacity: 0,
+              filter: `blur(${blurValue})`,
+              y: -yOffset * 0.5,
+              transition: { duration: duration * 0.45, ease: [0.16, 1, 0.3, 1] },
+            },
+          }}
+          className={className}
+          {...rest}
+        >
+          {children}
+        </Component>
+      )
+    }
 
     const motionProps =
       isControlled || trigger === "inView"
         ? {
-            initial: { opacity: 0, filter: `blur(${blur})`, y: yOffset },
+            initial: { opacity: 0, filter: `blur(${blurValue})`, y: yOffset },
             animate: activeVisible
               ? { opacity: 1, filter: "blur(0px)", y: 0 }
-              : { opacity: 0, filter: `blur(${blur})`, y: yOffset },
+              : { opacity: 0, filter: `blur(${blurValue})`, y: yOffset },
           }
         : {
-            initial: { opacity: 0, filter: `blur(${blur})`, y: yOffset },
+            initial: { opacity: 0, filter: `blur(${blurValue})`, y: yOffset },
             animate: { opacity: 1, filter: "blur(0px)", y: 0 },
           }
 
     return (
       <Component
-        ref={(node) => {
-          localRef.current = node
-          if (typeof ref === "function") {
-            ref(node)
-          } else if (ref && "current" in ref) {
-            ref.current = node
-          }
-        }}
+        ref={bindRef}
         {...motionProps}
         transition={{
           duration,
@@ -200,7 +255,7 @@ export const FadeBlur = forwardRef<HTMLDivElement, FadeBlurProps>(
         }}
         exit={{
           opacity: 0,
-          filter: `blur(${blur})`,
+          filter: `blur(${blurValue})`,
           y: -yOffset * 0.7,
           transition: { duration: duration * 0.6, ease: [0.16, 1, 0.3, 1] },
         }}

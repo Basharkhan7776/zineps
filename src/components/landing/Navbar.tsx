@@ -2,6 +2,7 @@ import { useState, useRef } from "react"
 import { motion, useScroll, useMotionValueEvent, AnimatePresence, LayoutGroup, type Variants } from "framer-motion"
 import { ChevronDown, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { scrollToId } from "@/lib/runtime"
 import { HoverButton } from "@/components/ui/hover-button"
 
 export function Navbar() {
@@ -9,6 +10,7 @@ export function Navbar() {
   const [currentLang, setCurrentLang] = useState("🇬🇧 EN")
   const [langMenuOpen, setLangMenuOpen] = useState(false)
   const [hidden, setHidden] = useState(false)
+  const [hoverReveal, setHoverReveal] = useState(false)
   const [isScrolled, setIsScrolled] = useState(() => {
     if (typeof window !== "undefined") {
       return window.scrollY > 20
@@ -25,11 +27,8 @@ export function Navbar() {
     const diff = latest - previous
 
     // Mark top-of-the-page state: false when scrolled down, true when at very top
-    if (latest > 20) {
-      setIsScrolled(true)
-    } else {
-      setIsScrolled(false)
-    }
+    const nextScrolled = latest > 20
+    setIsScrolled((prev) => (prev === nextScrolled ? prev : nextScrolled))
 
     // Small threshold to avoid micro-jitter
     if (Math.abs(diff) < 4) return
@@ -87,20 +86,28 @@ export function Navbar() {
     setMobileMenuOpen(false)
     window.history.pushState(null, "", hash)
     window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index } }))
-    const targetId = hash.replace("#", "")
-    const el = document.getElementById(targetId)
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" })
-    }
+    scrollToId(hash.replace("#", ""))
   }
+
+  const navVisible = !hidden || mobileMenuOpen || hoverReveal
 
   return (
     <LayoutGroup id="navbar-frosted-surface">
+      {/* Hover the top-center of the viewport to reveal a scroll-hidden nav */}
+      {hidden && !mobileMenuOpen && (
+        <div
+          aria-hidden
+          className="fixed top-0 left-1/2 z-[60] h-10 w-[min(560px,72vw)] -translate-x-1/2"
+          onPointerEnter={() => setHoverReveal(true)}
+        />
+      )}
       <motion.header
         variants={navVariants}
         initial="visible"
-        animate={hidden && !mobileMenuOpen ? "hidden" : "visible"}
-        className="sticky top-0 z-50 w-full px-3 sm:px-6 pt-2 pb-1.5 transition-colors pointer-events-auto"
+        animate={navVisible ? "visible" : "hidden"}
+        onPointerEnter={() => setHoverReveal(true)}
+        onPointerLeave={() => setHoverReveal(false)}
+        className="sticky top-0 z-50 w-full px-3 sm:px-6 pt-2 pb-1.5 transition-colors pointer-events-auto relative"
       >
         <div
           className={cn(
@@ -147,6 +154,7 @@ export function Navbar() {
               <img
                 src="/zineps-logo.svg"
                 alt="Zineps Logo"
+                fetchPriority="high"
                 className="h-6 sm:h-7 w-auto object-contain"
                 onError={(e) => {
                   ;(e.target as HTMLImageElement).src = "/zineps-logo-black.svg"
@@ -317,7 +325,7 @@ export function Navbar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className="md:hidden mt-2 mx-auto max-w-[1440px] bg-white/95 backdrop-blur-2xl backdrop-saturate-150 rounded-2xl border border-white/80 shadow-2xl p-4 flex flex-col gap-2.5"
+              className="md:hidden absolute left-3 right-3 top-full z-50 mt-1 mx-auto max-w-[1440px] bg-white/95 backdrop-blur-2xl backdrop-saturate-150 rounded-2xl border border-white/80 shadow-2xl p-4 flex flex-col gap-2.5 max-h-[min(70dvh,calc(100dvh-5.5rem))] overflow-y-auto"
             >
               <a
                 href="#process-tabs"
@@ -358,13 +366,54 @@ export function Navbar() {
                 Pricing
               </a>
               <a
+                href="https://www.zineps.com/blog"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-3 py-2 text-xs sm:text-sm font-medium text-neutral-800 hover:bg-gray-100/80 rounded-lg transition-colors"
+              >
+                Blog
+              </a>
+              <a
                 href="#faq"
                 onClick={() => setMobileMenuOpen(false)}
                 className="px-3 py-2 text-xs sm:text-sm font-medium text-neutral-800 hover:bg-gray-100/80 rounded-lg transition-colors"
               >
                 FAQ
               </a>
+              <a
+                href="https://www.zineps.com/knowledge-base/helpcenter"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-3 py-2 text-xs sm:text-sm font-medium text-neutral-800 hover:bg-gray-100/80 rounded-lg transition-colors"
+              >
+                Help Center
+              </a>
+              <a
+                href="https://www.zineps.com/knowledge-base/api-docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-3 py-2 text-xs sm:text-sm font-medium text-neutral-800 hover:bg-gray-100/80 rounded-lg transition-colors"
+              >
+                API Documentation
+              </a>
               <div className="pt-2 border-t border-gray-200/80 flex flex-col gap-2">
+                <div className="flex flex-wrap gap-1.5 px-1">
+                  {languages.map((l) => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      onClick={() => {
+                        setCurrentLang(l.label.split(" ")[0] + " " + l.code)
+                      }}
+                      className="px-2.5 py-1.5 text-xs text-neutral-800 hover:bg-[#E6FAF5] hover:text-[#0f7f75] rounded-lg transition-colors font-medium"
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
                 <HoverButton
                   href="https://app.zineps.com/Account/Register"
                   target="_blank"

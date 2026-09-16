@@ -30,15 +30,15 @@ export const HoverButton: React.FC<HoverButtonProps> = (props) => {
   } = props
 
   const buttonRef = useRef<HTMLElement | null>(null)
-  const [glowPosition, setGlowPosition] = useState({ x: 50, y: 50 })
+  const glowRef = useRef<HTMLSpanElement | null>(null)
   const [isHovered, setIsHovered] = useState(false)
 
   const handleMouseMove = (e: MouseEvent<HTMLElement>) => {
-    if (buttonRef.current) {
+    if (buttonRef.current && glowRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
-      setGlowPosition({ x, y })
+      glowRef.current.style.background = v.hoverGradient(x, y)
     }
   }
 
@@ -124,11 +124,12 @@ export const HoverButton: React.FC<HoverButtonProps> = (props) => {
 
       {/* Dynamic cursor-following gradient hover effect using the exact same gradient colors */}
       <span
+        ref={glowRef}
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none transition-opacity duration-300 ease-out"
         style={{
           opacity: isHovered ? 1 : 0,
-          background: v.hoverGradient(glowPosition.x, glowPosition.y),
+          background: v.hoverGradient(50, 50),
         }}
       />
 

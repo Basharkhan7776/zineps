@@ -67,6 +67,20 @@
       </div>
     </div>
     <div id="root"></div>
+    <script>
+      (function () {
+        try {
+          var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var mem = navigator.deviceMemory;
+          var cores = navigator.hardwareConcurrency;
+          var save = navigator.connection && navigator.connection.saveData;
+          if (reduce || (mem && mem <= 4) || (cores && cores <= 4) || save) {
+            var curtain = document.getElementById("pre-react-curtain");
+            if (curtain) curtain.remove();
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

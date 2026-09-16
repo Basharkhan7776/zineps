@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useRef, useState, useEffect } from "react"
+import { getDeviceProfile, observeVisibility } from "@/lib/runtime"
 import { ArrowRight, Mail, X, CheckCircle2 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { HoverButton } from "@/components/ui/hover-button"
@@ -262,15 +263,18 @@ export function CtaSection() {
   const [dialogInitialEmail, setDialogInitialEmail] = useState("")
   const [dialogPreSubscribed, setDialogPreSubscribed] = useState(false)
 
-  // Scroll-driven logo rotation with inertia deceleration and stop-on-idle
   useEffect(() => {
-    let animId: number
+    if (getDeviceProfile().prefersReducedMotion) return
+
+    let animId = 0
     let lastTime = performance.now()
     let lastScrollY = window.scrollY
     let velocity = 0
     let currentRotation = 0
+    let running = false
+    let isVisible = true
+    let isPageVisible = !document.hidden
 
-    // Local wheel listener for instantaneous response to trackpad/wheel gestures
     const handleWheel = (e: WheelEvent) => {
       velocity += e.deltaY * 0.35
     }
@@ -278,6 +282,7 @@ export function CtaSection() {
     window.addEventListener("wheel", handleWheel, { passive: true })
 
     const updateRotation = (now: number) => {
+      if (!running) return
       const dt = Math.min((now - lastTime) / 1000, 0.1)
       lastTime = now
 
@@ -305,13 +310,43 @@ export function CtaSection() {
         velocity = 0
       }
 
+      if (!isVisible || !isPageVisible) {
+        running = false
+        return
+      }
       animId = requestAnimationFrame(updateRotation)
     }
 
-    animId = requestAnimationFrame(updateRotation)
+    const tryStart = () => {
+      if (isVisible && isPageVisible && !running) {
+        running = true
+        lastTime = performance.now()
+        animId = requestAnimationFrame(updateRotation)
+      }
+    }
+
+    const unobserve = sectionRef.current
+      ? observeVisibility(sectionRef.current, (visible) => {
+          isVisible = visible
+          if (visible) tryStart()
+          else running = false
+        })
+      : () => {}
+
+    const onPageVisibility = () => {
+      isPageVisible = !document.hidden
+      if (isPageVisible) tryStart()
+      else running = false
+    }
+    document.addEventListener("visibilitychange", onPageVisibility)
+
+    tryStart()
 
     return () => {
+      running = false
       window.removeEventListener("wheel", handleWheel)
+      document.removeEventListener("visibilitychange", onPageVisibility)
+      unobserve()
       cancelAnimationFrame(animId)
     }
   }, [])
@@ -327,7 +362,7 @@ export function CtaSection() {
   }
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center py-16 sm:py-20 lg:py-24 bg-white overflow-hidden">
+    <section className="relative w-full min-h-[100dvh] flex items-center justify-center py-16 sm:py-20 lg:py-24 bg-white overflow-hidden">
       {/* Ambient background mint glows matching Hero and BentoFeatures */}
       <div className="absolute top-1/4 -left-48 w-[620px] h-[620px] bg-[#70CAB9]/14 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-1/4 -right-48 w-[620px] h-[620px] bg-[#70CAB9]/12 rounded-full blur-[150px] pointer-events-none" />
