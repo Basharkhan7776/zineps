@@ -6,10 +6,9 @@ import { PartnerRatesSection } from "@/components/landing/PartnerRatesSection"
 import { ShippingProcessTabs } from "@/components/landing/ShippingProcessTabs"
 import { BentoFeatures } from "@/components/landing/BentoFeatures"
 import { ShippingAiBanner } from "@/components/landing/ShippingAiBanner"
-import { LogisticsOsSection } from "@/components/landing/LogisticsOsSection"
 import { IntegrationsSection } from "@/components/landing/IntegrationsSection"
-import { DifferentiationSection } from "@/components/landing/DifferentiationSection"
 import { FaqSection } from "@/components/landing/FaqSection"
+import { RecentNewsSection } from "@/components/landing/RecentNewsSection"
 import { CtaSection } from "@/components/landing/CtaSection"
 import { Footer } from "@/components/landing/Footer"
 import GradientWaves from "./components/GradientWaves"
@@ -73,26 +72,22 @@ export function App() {
         {/* 100+ Integrations Infinite Scrolling Ticker */}
         <IntegrationsSection />
 
-        {/* Interactive E-commerce vs B2B Tabs */}
-        <ShippingProcessTabs />
-
         {/* Bento Grid Feature Overview */}
         <BentoFeatures />
 
         {/* Shipping AI Highlight Banner */}
         <ShippingAiBanner />
 
-        {/* Logistics Operating System for Partners */}
-        <LogisticsOsSection />
-
-
-        {/* Differentiation & Aceternity Card Hover Grid */}
-        <DifferentiationSection />
+        {/* Unified 3-Toggle Shipping Capabilities & Dashboard Previews (Scroll-Snapping) */}
+        <ShippingProcessTabs />
 
         {/* Interactive FAQ Accordion */}
         <FaqSection />
 
-        {/* Final Call to Action */}
+        {/* Recent News & Insights Carousel */}
+        <RecentNewsSection />
+
+        {/* Combined Differentiation & Final Call to Action */}
         <CtaSection />
       </main>
 

@@ -209,7 +209,7 @@ export function IntegrationsSection() {
     <section
       id="integrations"
       ref={containerRef}
-      className="py-16 md:py-24 relative overflow-hidden min-h-[580px] sm:min-h-[640px] md:min-h-[700px] flex items-center justify-center select-none"
+      className="py-16 md:py-24 relative overflow-hidden min-h-screen flex items-center justify-center select-none"
     >
       {/* Background: Vertical moving logo ticker columns with top & bottom fade mask */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">

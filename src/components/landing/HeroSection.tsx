@@ -37,6 +37,13 @@ export function HeroSection() {
                 </HoverButton>
                 <HoverButton
                   href="#logistics-os"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    window.history.pushState(null, "", "#logistics-os")
+                    window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index: 2 } }))
+                    const el = document.getElementById("logistics-os")
+                    if (el) el.scrollIntoView({ behavior: "smooth" })
+                  }}
                   variant="outline"
                   size="md"
                 >

@@ -82,6 +82,18 @@ export function Navbar() {
   // Active full background state
   const showFullNavBg = isScrolled || mobileMenuOpen
 
+  const navigateToProcessTab = (index: number, hash: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    setMobileMenuOpen(false)
+    window.history.pushState(null, "", hash)
+    window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index } }))
+    const targetId = hash.replace("#", "")
+    const el = document.getElementById(targetId)
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+
   return (
     <LayoutGroup id="navbar-frosted-surface">
       <motion.header
@@ -154,12 +166,14 @@ export function Navbar() {
               <div className="absolute top-full left-0 mt-1.5 min-w-[18.5rem] max-w-[min(100vw-2rem,24rem)] bg-white/95 backdrop-blur-xl border border-gray-200/90 shadow-2xl rounded-2xl transition-all duration-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-1.5 group-hover:translate-y-0 p-1.5 z-50">
                 <a
                   href="#process-tabs"
+                  onClick={(e) => navigateToProcessTab(0, "#process-tabs", e)}
                   className="block px-3.5 py-2 text-xs sm:text-sm text-neutral-800 hover:bg-[#E6FAF5] hover:text-[#0f7f75] rounded-xl transition-colors leading-snug font-medium"
                 >
                   Shipping for e-commerce and SMBs
                 </a>
                 <a
                   href="#logistics-os"
+                  onClick={(e) => navigateToProcessTab(2, "#logistics-os", e)}
                   className="block px-3.5 py-2 text-xs sm:text-sm text-neutral-800 hover:bg-[#E6FAF5] hover:text-[#0f7f75] rounded-xl transition-colors leading-snug font-medium border-t border-gray-100"
                 >
                   Platform for logistics providers
@@ -307,14 +321,14 @@ export function Navbar() {
             >
               <a
                 href="#process-tabs"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => navigateToProcessTab(0, "#process-tabs", e)}
                 className="px-3 py-2 text-xs sm:text-sm font-medium text-neutral-800 hover:bg-gray-100/80 rounded-lg transition-colors"
               >
                 Shipping for e-commerce and SMBs
               </a>
               <a
                 href="#logistics-os"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => navigateToProcessTab(2, "#logistics-os", e)}
                 className="px-3 py-2 text-xs sm:text-sm font-medium text-neutral-800 hover:bg-gray-100/80 rounded-lg transition-colors"
               >
                 Platform for logistics providers

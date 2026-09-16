@@ -223,6 +223,13 @@ export function Footer() {
                   <li>
                     <a
                       href="#process-tabs"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        window.history.pushState(null, "", "#process-tabs")
+                        window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index: 0 } }))
+                        const el = document.getElementById("process-tabs")
+                        if (el) el.scrollIntoView({ behavior: "smooth" })
+                      }}
                       className="text-[#525151] hover:text-[#0f7f75] transition-colors leading-relaxed block"
                     >
                       Shipping for e-commerce &amp; SMEs
@@ -231,6 +238,13 @@ export function Footer() {
                   <li>
                     <a
                       href="#logistics-os"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        window.history.pushState(null, "", "#logistics-os")
+                        window.dispatchEvent(new CustomEvent("select-process-tab", { detail: { index: 2 } }))
+                        const el = document.getElementById("logistics-os")
+                        if (el) el.scrollIntoView({ behavior: "smooth" })
+                      }}
                       className="text-[#525151] hover:text-[#0f7f75] transition-colors leading-relaxed block"
                     >
                       Platform for logistics providers
