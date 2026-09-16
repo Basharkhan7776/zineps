@@ -114,10 +114,10 @@ export function PartnerRatesSection() {
 
   // Spring smoothing for 3D rotation and depth transforms
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 80,
-    damping: 25,
+    stiffness: 90,
+    damping: 24,
     mass: 0.5,
-    restDelta: 0.0001,
+    restDelta: 0.001,
   })
 
   // 3D Perspective Transforms matching storyboard:
@@ -173,7 +173,7 @@ export function PartnerRatesSection() {
             background:
               "linear-gradient(135deg, #5b8e82 0%, #446e63 45%, #2a4740 100%)",
           }}
-          className="relative overflow-hidden flex items-center justify-center shadow-2xl will-change-transform"
+          className="relative overflow-hidden flex items-center justify-center shadow-2xl will-change-transform transform-gpu"
         >
           {/* Subtle decorative background ambient glow */}
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-[480px] h-[480px] bg-white/10 rounded-full blur-3xl pointer-events-none" />

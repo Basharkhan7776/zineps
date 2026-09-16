@@ -11,10 +11,10 @@ if (shouldUseSmoothScroll()) {
     await import("lenis/dist/lenis.css")
     const lenis = new Lenis({
       autoRaf: true,
-      lerp: 0.05,
-      duration: 1.5,
+      lerp: 0.08,
+      duration: 1.1,
       smoothWheel: true,
-      wheelMultiplier: 0.6,
+      wheelMultiplier: 0.75,
     })
     ;(window as unknown as { lenis: InstanceType<typeof Lenis> }).lenis = lenis
   })

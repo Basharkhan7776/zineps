@@ -17,7 +17,7 @@ export function CloudParallax({
   const reduceMotion = getDeviceProfile().prefersReducedMotion || getDeviceProfile().isLowEnd
   const { scrollY } = useScroll()
   const rawScrollOffset = useTransform(scrollY, [0, 1200], [0, reduceMotion ? 0 : scrollStrengthY])
-  const smoothScrollY = useSpring(rawScrollOffset, { damping: 32, stiffness: 180, mass: 0.6 })
+  const smoothScrollY = useSpring(rawScrollOffset, { damping: 32, stiffness: 180, mass: 0.6, restDelta: 0.001 })
 
   return (
     <div className={cn("absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0", className)}>

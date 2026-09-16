@@ -223,7 +223,7 @@ export const FadeBlur = forwardRef<HTMLDivElement, FadeBlurProps>(
               transition: { duration: duration * 0.45, ease: [0.16, 1, 0.3, 1] },
             },
           }}
-          className={className}
+          className={`transform-gpu will-change-[opacity,transform] ${className}`.trim()}
           {...rest}
         >
           {children}
@@ -259,7 +259,7 @@ export const FadeBlur = forwardRef<HTMLDivElement, FadeBlurProps>(
           y: -yOffset * 0.7,
           transition: { duration: duration * 0.6, ease: [0.16, 1, 0.3, 1] },
         }}
-        className={className}
+        className={`transform-gpu will-change-[opacity,transform] ${className}`.trim()}
         {...rest}
       >
         {children}

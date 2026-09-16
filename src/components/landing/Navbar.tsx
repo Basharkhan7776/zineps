@@ -121,7 +121,7 @@ export function Navbar() {
           {showFullNavBg && (
             <motion.div
               layoutId="nav-frosted-glass-pill"
-              className="absolute inset-0 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/80 ring-1 ring-black/[0.05] shadow-[inset_0_1px_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_1px_0_rgba(0,0,0,0.02),0_8px_32px_-4px_rgba(0,0,0,0.07)] rounded-2xl pointer-events-none"
+              className="absolute inset-0 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/80 ring-1 ring-black/[0.05] shadow-[inset_0_1px_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_1px_0_rgba(0,0,0,0.02),0_8px_32px_-4px_rgba(0,0,0,0.07)] rounded-2xl pointer-events-none transform-gpu"
               transition={{
                 type: "spring",
                 stiffness: 240,
@@ -137,7 +137,7 @@ export function Navbar() {
             {!showFullNavBg && (
               <motion.div
                 layoutId="nav-frosted-glass-pill"
-                className="absolute inset-0 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/80 ring-1 ring-black/[0.05] shadow-[inset_0_1px_1.5px_0_rgba(255,255,255,0.95),0_4px_16px_-2px_rgba(0,0,0,0.06)] rounded-xl pointer-events-none"
+                className="absolute inset-0 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/80 ring-1 ring-black/[0.05] shadow-[inset_0_1px_1.5px_0_rgba(255,255,255,0.95),0_4px_16px_-2px_rgba(0,0,0,0.06)] rounded-xl pointer-events-none transform-gpu"
                 transition={{
                   type: "spring",
                   stiffness: 240,

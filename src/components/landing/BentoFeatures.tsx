@@ -31,9 +31,13 @@ export function BentoFeatures() {
     typeof window !== "undefined" ? window.innerWidth < 1024 : false
   )
 
+  const cachedAnchorsRef = useRef<Map<number, { x: number; y: number }>>(new Map())
+
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
-    const onResize = debounce(checkMobile, 150)
+    const onResize = debounce(() => {
+      setIsMobile(window.innerWidth < 1024)
+      cachedAnchorsRef.current.clear()
+    }, 150)
     window.addEventListener("resize", onResize)
     return () => window.removeEventListener("resize", onResize)
   }, [])
@@ -55,30 +59,44 @@ export function BentoFeatures() {
     }
   })
 
-  // 3. Handle projected screen position of active point on land to calculate connecting line
-  const handlePointScreenPos = useCallback((pos: PointScreenPos) => {
-    setPointPos(pos)
+  const getCardAnchor = useCallback((coordId: number): { x: number; y: number } | null => {
+    const cached = cachedAnchorsRef.current.get(coordId)
+    if (cached) return cached
 
     const container = cardContainerRef.current
-    if (!container) return
+    if (!container) return null
 
     const cardRefs = [card0Ref, card1Ref, card2Ref, card3Ref]
-    const activeEl = cardRefs[pos.coordId]?.current
-    if (!activeEl) return
+    const activeEl = cardRefs[coordId]?.current
+    if (!activeEl) return null
 
     const cRect = container.getBoundingClientRect()
     const elRect = activeEl.getBoundingClientRect()
 
     // Cards 0 and 2 are in the LEFT column -> anchor is right-center edge
     // Cards 1 and 3 are in the RIGHT column -> anchor is left-center edge
-    const isLeftCard = pos.coordId === 0 || pos.coordId === 2
+    const isLeftCard = coordId === 0 || coordId === 2
     const x = isLeftCard
       ? elRect.right - cRect.left
       : elRect.left - cRect.left
     const y = elRect.top - cRect.top + elRect.height * 0.5
 
-    setCardAnchor({ x, y })
+    const anchor = { x, y }
+    cachedAnchorsRef.current.set(coordId, anchor)
+    return anchor
   }, [])
+
+  // 3. Handle projected screen position of active point on land to calculate connecting line
+  const handlePointScreenPos = useCallback(
+    (pos: PointScreenPos) => {
+      setPointPos(pos)
+      const anchor = getCardAnchor(pos.coordId)
+      if (anchor) {
+        setCardAnchor(anchor)
+      }
+    },
+    [getCardAnchor]
+  )
 
   return (
     <section

@@ -10,7 +10,7 @@ export function ShippingAiBanner() {
 
   return (
     <section id="shipping-ai" className="py-10 md:py-16 overflow-hidden">
-      <div className="w-full max-w-[1523px] mx-auto px-4 sm:px-6 md:px-[73px] flex justify-center">
+      <div className="w-full max-w-[1523px] mx-auto px-4 sm:px-6 md:px-[73px] flex justify-center [contain:layout]">
         <motion.div
           initial={{ width: "85%", opacity: 0.92 }}
           whileInView={{ width: "100%", opacity: 1 }}
@@ -21,7 +21,7 @@ export function ShippingAiBanner() {
             damping: 18,
             mass: 0.9,
           }}
-          className="rounded-3xl p-8 sm:p-12 md:p-14 relative overflow-hidden shadow-2xl border border-[#70CAB9]/25 will-change-[width,opacity]"
+          className="rounded-3xl p-8 sm:p-12 md:p-14 relative overflow-hidden shadow-2xl border border-[#70CAB9]/25 will-change-[width,opacity] transform-gpu"
           style={{
             background:
               "linear-gradient(135deg, #2b453e 0%, #3d5f56 50%, #1e312c 100%)",

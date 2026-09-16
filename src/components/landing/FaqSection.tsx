@@ -292,7 +292,7 @@ export function FaqSection() {
                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                         exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative z-10"
+                        className="relative z-10 transform-gpu will-change-[opacity,transform]"
                       >
                         <p className="text-base sm:text-lg lg:text-[18px] text-[#2c353d] leading-relaxed font-normal">
                           {activeFaq.answer}

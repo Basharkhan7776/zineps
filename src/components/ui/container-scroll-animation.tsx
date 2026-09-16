@@ -41,7 +41,7 @@ export const ContainerScroll = ({
     stiffness: 75,
     damping: 24,
     mass: 0.6,
-    restDelta: 0.0001,
+    restDelta: 0.001,
   })
 
   // All transforms driven by spring-smoothed scroll
@@ -57,7 +57,7 @@ export const ContainerScroll = ({
   // High-performance spring-damped mouse parallax without layout thrashing
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
-  const springConfig = { damping: 30, stiffness: 90, mass: 0.4 }
+  const springConfig = { damping: 30, stiffness: 90, mass: 0.4, restDelta: 0.001 }
   const mouseTiltX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), springConfig)
   const mouseTiltY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-5, 5]), springConfig)
 

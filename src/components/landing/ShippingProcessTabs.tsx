@@ -192,8 +192,8 @@ export function ShippingProcessTabs() {
     [0.65, 1, 1, 0.65]
   )
 
-  const cardScale = useSpring(rawScale, { stiffness: 180, damping: 24, mass: 0.5 })
-  const cardOpacity = useSpring(rawOpacity, { stiffness: 180, damping: 24, mass: 0.5 })
+  const cardScale = useSpring(rawScale, { stiffness: 180, damping: 24, mass: 0.5, restDelta: 0.001 })
+  const cardOpacity = useSpring(rawOpacity, { stiffness: 180, damping: 24, mass: 0.5, restDelta: 0.001 })
 
   const handleTabClick = useCallback((index: number) => {
     goToStage(index)
@@ -288,7 +288,7 @@ export function ShippingProcessTabs() {
         {/* Master Frosted Card Frame: Expands on mount of snap and contracts on demount */}
         <motion.div
           style={isDesktop ? { scale: cardScale, opacity: cardOpacity } : undefined}
-          className="relative w-full max-w-7xl mx-auto rounded-[28px] sm:rounded-[40px] md:rounded-[44px] bg-white/80 backdrop-blur-2xl border border-white/90 shadow-[0_25px_80px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.03),0_0_0_1px_rgba(255,255,255,0.85)] p-5 sm:p-8 lg:p-10 overflow-visible lg:overflow-hidden flex flex-col justify-center max-h-none lg:max-h-[94dvh] origin-center lg:will-change-transform"
+          className="relative w-full max-w-7xl mx-auto rounded-[28px] sm:rounded-[40px] md:rounded-[44px] bg-white/80 backdrop-blur-2xl border border-white/90 shadow-[0_25px_80px_rgba(15,127,117,0.08),0_1px_3px_rgba(0,0,0,0.03),0_0_0_1px_rgba(255,255,255,0.85)] p-5 sm:p-8 lg:p-10 overflow-visible lg:overflow-hidden flex flex-col justify-center max-h-none lg:max-h-[94dvh] origin-center lg:will-change-transform transform-gpu"
         >
           {/* Main 2-Column Showcase Area: Left = Title + Content + Toggles at Top; Right = Tablet */}
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-start lg:items-center">
@@ -425,12 +425,12 @@ export function ShippingProcessTabs() {
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        className="absolute inset-0 flex items-center justify-center p-1 sm:p-1.5 bg-[#f8fafc]"
+                        className="absolute inset-0 flex items-center justify-center p-1 sm:p-1.5 bg-[#f8fafc] transform-gpu will-change-transform"
                       >
                         <img
                           src={currentTab.mockup.src}
                           alt={currentTab.mockup.alt}
-                          className="w-full h-full object-cover object-top select-none pointer-events-none block"
+                          className="w-full h-full object-cover object-top select-none pointer-events-none block transform-gpu"
                           loading="eager"
                         />
                       </motion.div>
