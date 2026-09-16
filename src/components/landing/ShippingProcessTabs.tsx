@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useCallback } from "react"
 import { debounce } from "@/lib/runtime"
 import {
   CheckCircle2,
@@ -145,13 +145,13 @@ export function ShippingProcessTabs() {
   const isProgrammaticScroll = useRef(false)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const goToStage = (index: number) => {
+  const goToStage = useCallback((index: number) => {
     const prev = activeStageRef.current
     if (index === prev) return
     setDirection(index > prev ? 1 : -1)
     activeStageRef.current = index
     setActiveStage(index)
-  }
+  }, [])
 
   // Track scroll progression across 3 stages for tab switching
   const { scrollYProgress: stageScrollProgress } = useScroll({
@@ -195,7 +195,7 @@ export function ShippingProcessTabs() {
   const cardScale = useSpring(rawScale, { stiffness: 180, damping: 24, mass: 0.5 })
   const cardOpacity = useSpring(rawOpacity, { stiffness: 180, damping: 24, mass: 0.5 })
 
-  const handleTabClick = (index: number) => {
+  const handleTabClick = useCallback((index: number) => {
     goToStage(index)
     isProgrammaticScroll.current = true
     if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
@@ -211,7 +211,7 @@ export function ShippingProcessTabs() {
       const targetScroll = containerTop + totalScrollable * (index / 2)
       window.scrollTo({ top: targetScroll, behavior: "smooth" })
     }
-  }
+  }, [goToStage])
 
   // Handle external hash navigations (e.g. #logistics-os, #process-tabs) and custom events
   useEffect(() => {
@@ -255,7 +255,7 @@ export function ShippingProcessTabs() {
       clearTimeout(timer)
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
     }
-  }, [])
+  }, [handleTabClick])
 
   const currentTab = TABS[activeStage]
 
